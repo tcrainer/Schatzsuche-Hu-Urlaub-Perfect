@@ -47,6 +47,23 @@
         }
         header h1 { font-size: 1.4rem; line-height: 1.2; }
         header p { color: #dcfce7; font-size: 0.78rem; font-style: italic; }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #qr-header-btn {
+            background-color: #ffffff;
+            color: #166534;
+            border: 2px solid #bbf7d0;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        #qr-header-btn:hover { transform: scale(1.04); }
         #timer-display {
             background-color: #166534;
             padding: 6px 14px;
@@ -58,14 +75,58 @@
             text-align: center;
         }
 
-        /* Setup Screen */
+        /* Setup Screen with QR Code */
         #setup-screen {
-            padding: 40px 20px;
+            padding: 28px 20px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
         }
+        .qr-card {
+            background: #f8fafc;
+            border: 2px dashed #94a3b8;
+            border-radius: 16px;
+            padding: 16px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            max-width: 360px;
+            width: 100%;
+        }
+        .qr-card p {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #334155;
+        }
+        .qr-img {
+            width: 210px;
+            height: 210px;
+            border-radius: 12px;
+            border: 3px solid #e2e8f0;
+            background: #ffffff;
+            padding: 6px;
+            transition: width 0.25s ease, height 0.25s ease;
+        }
+        .qr-img.enlarged {
+            width: 340px;
+            height: 340px;
+        }
+        .btn-zoom {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-zoom:hover { background: #cbd5e1; }
         #setup-screen h2 {
-            font-size: 1.35rem;
-            margin-bottom: 20px;
+            font-size: 1.3rem;
             color: #334155;
         }
         .setup-btns {
@@ -88,6 +149,27 @@
         .btn-setup:active { transform: scale(0.96); }
         .btn-blue { background-color: #3b82f6; }
         .btn-purple { background-color: #a855f7; }
+
+        /* QR Modal (accessible during the game too) */
+        #qr-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+        }
+        .qr-modal-box {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
 
         /* Main Game Layout */
         #game-screen {
@@ -382,15 +464,35 @@
                 <h1 class="title-font">🏖️ Schatzsuche: Urlaub im Perfekt</h1>
                 <p>Setze den Präsens-Satz ins Perfekt! / Put the present-tense sentence into the perfect tense!</p>
             </div>
-            <div id="timer-display">08:00</div>
+            <div class="header-right">
+                <button id="qr-header-btn" type="button">📱 QR-Code</button>
+                <div id="timer-display">08:00</div>
+            </div>
         </header>
 
-        <!-- Initial Setup Screen -->
+        <!-- Initial Setup Screen with QR Code -->
         <div id="setup-screen">
+            <div class="qr-card">
+                <p>📱 Scanne den QR-Code / Scan the QR code:</p>
+                <img id="setup-qr-img" class="qr-img" alt="QR Code" src="data:image/png;base64,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" />
+                <button id="zoom-qr-btn" type="button" class="btn-zoom">🔍 QR-Code vergrößern / Enlarge</button>
+            </div>
+
             <h2>Wie viele Abenteurer seid ihr? / How many adventurers?</h2>
             <div class="setup-btns">
                 <button id="btn-2p" type="button" class="btn-setup btn-blue">2 Spieler</button>
                 <button id="btn-3p" type="button" class="btn-setup btn-purple">3 Spieler</button>
+            </div>
+        </div>
+
+        <!-- Pop-up QR Modal -->
+        <div id="qr-modal" class="hidden">
+            <div class="qr-modal-box">
+                <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;">📱 QR-Code scannen</h3>
+                <img style="width:300px;height:300px;border:3px solid #e2e8f0;border-radius:12px;padding:6px;" alt="QR Code" src="data:image/png;base64,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" />
+                <div style="margin-top:16px;">
+                    <button id="close-qr-modal" type="button" class="btn-setup" style="background:#16a34a;padding:10px 24px;font-size:1rem;">Schließen / Close</button>
+                </div>
             </div>
         </div>
 
@@ -1007,7 +1109,19 @@
                 }).join('');
             }
 
-            // Wire up all buttons directly
+            // QR Code Zoom & Modal controls
+            document.getElementById('zoom-qr-btn').addEventListener('click', function() {
+                const qrImg = document.getElementById('setup-qr-img');
+                qrImg.classList.toggle('enlarged');
+            });
+            document.getElementById('qr-header-btn').addEventListener('click', function() {
+                document.getElementById('qr-modal').classList.remove('hidden');
+            });
+            document.getElementById('close-qr-modal').addEventListener('click', function() {
+                document.getElementById('qr-modal').classList.add('hidden');
+            });
+
+            // Wire up all game buttons directly
             document.getElementById('btn-2p').addEventListener('click', function() { startGame(2); });
             document.getElementById('btn-3p').addEventListener('click', function() { startGame(3); });
             document.getElementById('mode-easy-btn').addEventListener('click', function() { selectMode('easy'); });
