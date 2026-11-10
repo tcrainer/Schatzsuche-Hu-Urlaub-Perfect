@@ -4,717 +4,1019 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schatzsuche: Urlaub (Präsens → Perfekt)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap');
         
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Quicksand', sans-serif;
+            font-family: 'Quicksand', system-ui, -apple-system, sans-serif;
             background-color: #f0fdf4;
-            overscroll-behavior: none;
+            min-height: 100vh;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: #1e293b;
         }
         .title-font {
-            font-family: 'Fredoka One', cursive;
+            font-family: 'Fredoka One', cursive, sans-serif;
+        }
+        .hidden { display: none !important; }
+
+        /* App Container */
+        #app {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            border: 3px solid #bbf7d0;
+        }
+
+        /* Header */
+        header {
+            background-color: #16a34a;
+            color: #ffffff;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        header h1 { font-size: 1.4rem; line-height: 1.2; }
+        header p { color: #dcfce7; font-size: 0.78rem; font-style: italic; }
+        #timer-display {
+            background-color: #166534;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            border: 2px solid #4ade80;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        /* Setup Screen */
+        #setup-screen {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        #setup-screen h2 {
+            font-size: 1.35rem;
+            margin-bottom: 20px;
+            color: #334155;
+        }
+        .setup-btns {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+        .btn-setup {
+            border: none;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-size: 1.15rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        .btn-setup:hover { filter: brightness(1.08); transform: translateY(-2px); }
+        .btn-setup:active { transform: scale(0.96); }
+        .btn-blue { background-color: #3b82f6; }
+        .btn-purple { background-color: #a855f7; }
+
+        /* Main Game Layout */
+        #game-screen {
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 960px) {
+            #game-screen { flex-direction: row; }
+            .left-panel { width: 43%; border-right: 2px solid #e2e8f0; }
+            .right-panel { width: 57%; }
+        }
+
+        .left-panel {
+            padding: 14px;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .right-panel {
+            padding: 14px;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Player Board */
+        #player-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+        }
+        .player-card {
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+            background: #f1f5f9;
+            opacity: 0.65;
+            transition: all 0.2s ease;
+        }
+        .player-card.active {
+            background: #ffffff;
+            opacity: 1;
+            transform: scale(1.02);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .player-card.color-blue.active { border-color: #3b82f6; box-shadow: 0 0 0 2px #93c5fd; }
+        .player-card.color-purple.active { border-color: #a855f7; box-shadow: 0 0 0 2px #d8b4fe; }
+        .player-card.color-amber.active { border-color: #f59e0b; box-shadow: 0 0 0 2px #fde68a; }
+        .player-top { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 0.92rem; }
+        .badge-blue { background: #3b82f6; color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; }
+        .badge-purple { background: #a855f7; color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; }
+        .badge-amber { background: #f59e0b; color: #fff; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; }
+        .player-sub { font-size: 0.72rem; color: #64748b; font-weight: 700; margin-top: 2px; }
+
+        /* Level Selector */
+        .box-card {
+            background: #ffffff;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .section-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #94a3b8;
+            letter-spacing: 0.04em;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .mode-btn {
+            padding: 7px 8px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.78rem;
+            border: 2px solid #e2e8f0;
+            background: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .mode-btn.easy-active {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #14532d;
+        }
+        .mode-btn.adv-active {
+            background: #f3e8ff;
+            border-color: #9333ea;
+            color: #581c87;
+        }
+
+        /* Prompts */
+        #present-prompt {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            text-align: center;
+            margin: 4px 0 8px 0;
+        }
+        #english-prompt {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #2563eb;
+            font-style: italic;
+            text-align: center;
+            padding-top: 6px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        /* Input & Buttons */
+        #answer-input {
+            width: 100%;
+            height: 62px;
+            padding: 8px 10px;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 800;
+            color: #000000;
+            background: #ffffff;
+            resize: none;
+            outline: none;
+        }
+        #answer-input:focus { border-color: #16a34a; }
+        #answer-input:disabled { background: #f1f5f9; color: #334155; }
+
+        .action-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .btn-action {
+            flex: 1;
+            border: none;
+            border-radius: 12px;
+            padding: 10px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+        }
+        .btn-action:disabled { opacity: 0.45; cursor: not-allowed; }
+        #mic-btn { background-color: #ef4444; }
+        #submit-btn { background-color: #16a34a; }
+        #speech-status {
+            font-size: 0.72rem;
+            text-align: center;
+            color: #64748b;
+            font-weight: 700;
+            font-style: italic;
+            min-height: 16px;
+            margin-top: 4px;
+        }
+
+        /* Feedback Area */
+        #feedback-area {
+            padding: 10px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            min-height: 92px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .help-choice-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-top: 6px;
+        }
+        .btn-help-choice {
+            flex: 1;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 800;
+            font-size: 0.76rem;
+            cursor: pointer;
+        }
+        #continue-btn {
+            width: 100%;
+            border: none;
+            background-color: #2563eb;
+            color: white;
+            font-weight: 800;
+            padding: 11px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+        }
+
+        /* Right Panel: Grid */
+        .grid-header {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        #grid-status-text { font-size: 0.85rem; font-weight: 800; color: #334155; }
+        #dig-count {
+            background: #fef3c7;
+            color: #b45309;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        #treasure-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 6px;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+        @media (max-width: 600px) {
+            #treasure-grid { grid-template-columns: repeat(6, 1fr); }
         }
         .grid-tile {
-            transition: all 0.2s ease;
-            perspective: 1000px;
+            background-color: #fed7aa;
+            border: 2px solid #fdba74;
+            border-radius: 8px;
+            cursor: pointer;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            transition: transform 0.15s ease, filter 0.15s ease;
+            user-select: none;
         }
         .grid-tile:not(.revealed):hover {
-            transform: scale(1.05);
-            filter: brightness(1.1);
+            transform: scale(1.06);
+            filter: brightness(1.08);
         }
-        .treasure-reveal {
-            animation: bounce 0.5s ease-out;
+        .grid-tile.revealed {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+            cursor: default;
+            animation: bounce 0.4s ease-out;
         }
+
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        .active-player {
-            transform: scale(1.02);
-        }
-        .timer-low {
-            color: #ef4444;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { transform: translateY(-6px); }
         }
         .mic-listening {
             animation: pulse-ring 1.2s infinite;
             background-color: #dc2626 !important;
         }
         @keyframes pulse-ring {
-            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.8); }
-            70% { box-shadow: 0 0 0 14px rgba(220, 38, 38, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(220, 38, 38, 0); }
             100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
         }
+        .timer-low { color: #f87171; }
     </style>
 </head>
-<body class="min-h-screen p-2 md:p-4 flex flex-col justify-center">
+<body>
 
-    <div id="app" class="max-w-7xl w-full mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-green-200">
+    <div id="app">
         <!-- Header Section -->
-        <header class="bg-green-600 px-4 py-2.5 text-white flex flex-row justify-between items-center gap-2">
+        <header>
             <div>
-                <h1 class="text-xl md:text-2xl title-font leading-tight">🏖️ Schatzsuche: Urlaub im Perfekt</h1>
-                <p class="text-green-100 text-xs italic">Setze den Präsens-Satz ins Perfekt! / Put the present-tense sentence into the perfect tense!</p>
+                <h1 class="title-font">🏖️ Schatzsuche: Urlaub im Perfekt</h1>
+                <p>Setze den Präsens-Satz ins Perfekt! / Put the present-tense sentence into the perfect tense!</p>
             </div>
-            <div id="timer-display" class="bg-green-800 px-3 py-1 rounded-xl text-lg md:text-xl font-bold border border-green-400 text-center shadow-inner">
-                08:00
-            </div>
+            <div id="timer-display">08:00</div>
         </header>
 
         <!-- Initial Setup Screen -->
-        <div id="setup-screen" class="p-8 text-center">
-            <h2 class="text-xl font-bold mb-4 text-slate-700">Wie viele Abenteurer seid ihr? / How many adventurers?</h2>
-            <div class="flex justify-center gap-4">
-                <button id="btn-2p" type="button" onclick="window.startGame(2)" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95 cursor-pointer">2 Spieler</button>
-                <button id="btn-3p" type="button" onclick="window.startGame(3)" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95 cursor-pointer">3 Spieler</button>
+        <div id="setup-screen">
+            <h2>Wie viele Abenteurer seid ihr? / How many adventurers?</h2>
+            <div class="setup-btns">
+                <button id="btn-2p" type="button" class="btn-setup btn-blue">2 Spieler</button>
+                <button id="btn-3p" type="button" class="btn-setup btn-purple">3 Spieler</button>
             </div>
         </div>
 
-        <!-- Main Game Interface (Compact Single Page) -->
-        <div id="game-screen" class="hidden flex flex-col lg:flex-row h-full">
+        <!-- Main Game Interface -->
+        <div id="game-screen" class="hidden">
             
-            <!-- Left Panel: Control & Tasks -->
-            <div class="w-full lg:w-5/12 p-3 md:p-4 bg-slate-50 border-r border-slate-200 flex flex-col justify-between gap-2.5">
+            <!-- Left Panel -->
+            <div class="left-panel">
                 
-                <!-- Player Board -->
-                <div id="player-board" class="grid grid-cols-2 lg:grid-cols-1 gap-2"></div>
+                <div id="player-board"></div>
 
-                <!-- Level Selector (Easy vs Advanced) -->
-                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-[10px] uppercase font-bold text-slate-400 text-center mb-1.5">Schwierigkeit wählen / Choose Level:</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="mode-easy-btn" type="button" onclick="window.selectMode('easy')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all cursor-pointer">
-                            🟢 Einfach (Hauptsatz TMP)<br><span class="text-[10px] font-normal">1–2 Felder / tiles</span>
+                <!-- Level Selector -->
+                <div class="box-card">
+                    <p class="section-label">Schwierigkeit wählen / Choose Level:</p>
+                    <div class="mode-grid">
+                        <button id="mode-easy-btn" type="button" class="mode-btn easy-active">
+                            🟢 Einfach (Hauptsatz TMP)<br><span style="font-size:10px;font-weight:normal;">1–2 Felder / tiles</span>
                         </button>
-                        <button id="mode-adv-btn" type="button" onclick="window.selectMode('advanced')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all cursor-pointer">
-                            🟣 Profi (+ Nebensatz)<br><span class="text-[10px] font-normal">Bonus: 2–3 Felder / tiles!</span>
+                        <button id="mode-adv-btn" type="button" class="mode-btn">
+                            🟣 Profi (+ Nebensatz)<br><span style="font-size:10px;font-weight:normal;">Bonus: 2–3 Felder / tiles!</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- Task Box -->
-                <div id="turn-info" class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center space-y-1.5">
-                    <div>
-                        <p class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Präsens (Gegenwart) → Setze ins Perfekt:</p>
-                        <p id="present-prompt" class="text-sm md:text-base font-black text-slate-900 mt-0.5 leading-snug"></p>
-                    </div>
-                    <div class="pt-1 border-t border-slate-100">
-                        <p class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Bedeutung (Vergangenheit / Past Meaning):</p>
-                        <p id="english-prompt" class="text-xs md:text-sm font-bold text-blue-600 italic"></p>
-                    </div>
+                <div class="box-card">
+                    <p class="section-label">Präsens (Gegenwart) → Setze ins Perfekt:</p>
+                    <p id="present-prompt"></p>
+                    <p class="section-label" style="margin-top:4px;">Bedeutung (Vergangenheit / Past Meaning):</p>
+                    <p id="english-prompt"></p>
                 </div>
 
-                <!-- Input & Speech Section (with Start/Stop Recording) -->
-                <div id="input-section" class="space-y-1.5">
-                    <textarea id="answer-input" placeholder="Tippe den Perfekt-Satz oder nutze die Aufnahme / Type or record..."
-                           class="w-full p-2 border border-slate-300 rounded-xl focus:border-green-500 outline-none transition-all text-sm md:text-base bg-white h-16 resize-none font-bold text-black"
-                    ></textarea>
-                    
-                    <div class="flex gap-2">
-                        <button id="mic-btn" type="button" onclick="window.toggleSpeech()" 
-                                class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all cursor-pointer">
+                <!-- Input & Recording -->
+                <div>
+                    <textarea id="answer-input" placeholder="Tippe den Perfekt-Satz oder nutze die Aufnahme / Type or record..."></textarea>
+                    <div class="action-row">
+                        <button id="mic-btn" type="button" class="btn-action">
                             <span id="mic-icon">🎤</span> <span id="mic-label">Aufnahme starten / Start</span>
                         </button>
-                        <button id="submit-btn" type="button" onclick="window.checkAnswer()"
-                                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-2 px-3 rounded-xl shadow transition-all text-xs md:text-sm cursor-pointer">
+                        <button id="submit-btn" type="button" class="btn-action">
                             PRÜFEN / CHECK ✓
                         </button>
                     </div>
-                    <p id="speech-status" class="text-[11px] text-center text-slate-500 h-3.5 font-bold italic">Bereit für Aufnahme oder Tippen / Ready</p>
+                    <p id="speech-status">Bereit für Aufnahme oder Tippen / Ready</p>
                 </div>
                 
                 <!-- Feedback Area -->
-                <div id="feedback-area" class="p-2 md:p-2.5 rounded-xl flex flex-col items-center justify-center text-center bg-white border border-slate-200 shadow-inner min-h-[92px] text-xs">
-                    <p class="text-slate-400 italic">Wähle Einfach oder Profi, bilde den Satz im Perfekt und klicke auf PRÜFEN!</p>
+                <div id="feedback-area">
+                    <p style="color:#94a3b8;font-style:italic;">Wähle Einfach oder Profi, bilde den Satz im Perfekt und klicke auf PRÜFEN!</p>
                 </div>
 
-                <button id="continue-btn" type="button" onclick="window.nextTurn()" 
-                        class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all animate-pulse text-sm md:text-base cursor-pointer">
+                <button id="continue-btn" type="button" class="hidden">
                     Nächster Spieler / Next Player ➔
                 </button>
             </div>
 
             <!-- Right Panel: The Digging Grid -->
-            <div class="w-full lg:w-7/12 p-3 md:p-4 bg-white flex flex-col justify-between">
-                <div class="mb-2 flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
-                    <h3 id="grid-status-text" class="text-xs md:text-sm font-bold text-slate-700 flex items-center gap-1">
-                        <span>📍</span> Bereit zum Graben / Ready to dig...
-                    </h3>
-                    <span id="dig-count" class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold shadow-sm"></span>
+            <div class="right-panel">
+                <div class="grid-header">
+                    <h3 id="grid-status-text">📍 Bereit zum Graben / Ready to dig...</h3>
+                    <span id="dig-count"></span>
                 </div>
-                <div id="treasure-grid" class="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-100 max-h-[430px] overflow-y-auto">
-                </div>
+                <div id="treasure-grid"></div>
             </div>
         </div>
 
         <!-- End Game Ranking Screen -->
-        <div id="finish-screen" class="hidden p-8 text-center">
-            <h2 class="text-4xl title-font mb-4 text-green-600">Spiel Beendet! / Game Over!</h2>
-            <div id="final-ranking" class="max-w-md mx-auto mb-6 space-y-3"></div>
-            <button type="button" onclick="location.reload()" class="bg-green-600 text-white px-8 py-4 rounded-2xl text-xl title-font hover:bg-green-700 transition-colors shadow-lg cursor-pointer">Nochmal spielen / Play Again</button>
+        <div id="finish-screen" class="hidden" style="padding:36px;text-align:center;">
+            <h2 class="title-font" style="font-size:2.2rem;color:#16a34a;margin-bottom:16px;">Spiel Beendet! / Game Over!</h2>
+            <div id="final-ranking" style="max-width:420px;margin:0 auto 24px auto;display:flex;flex-direction:column;gap:10px;"></div>
+            <button id="restart-btn" type="button" class="btn-setup" style="background:#16a34a;">Nochmal spielen / Play Again</button>
         </div>
     </div>
 
     <script>
-        const easySentences = [
-            { present: "Wir fahren mit der Fähre auf eine Insel.", perfekt: "Wir sind mit der Fähre auf eine Insel gefahren.", english: "We went to an island by ferry." },
-            { present: "Sie fahren mit dem Auto in ein Dorf.", perfekt: "Sie sind mit dem Auto in ein Dorf gefahren.", english: "They went to a village by car." },
-            { present: "Meine Freunde und ich fahren mit dem Reisebus in ein Skigebiet.", perfekt: "Meine Freunde und ich sind mit dem Reisebus in ein Skigebiet gefahren.", english: "My friends and I went to a ski resort by coach." },
-            { present: "Wir fahren am Samstag in einen Freizeitpark.", perfekt: "Wir sind am Samstag in einen Freizeitpark gefahren.", english: "We went to a theme park on Saturday." },
-            { present: "Ihr fahrt mit dem Fahrrad an den Strand.", perfekt: "Ihr seid mit dem Fahrrad an den Strand gefahren.", english: "You (pl.) went to the beach by bike." },
-            { present: "Ich fahre mit der S-Bahn in die Stadt.", perfekt: "Ich bin mit der S-Bahn in die Stadt gefahren.", english: "I went into town by suburban train." },
-            { present: "Er fliegt mit dem Flugzeug ins Ausland.", perfekt: "Er ist mit dem Flugzeug ins Ausland geflogen.", english: "He flew abroad by plane." },
-            { present: "Wir fahren mit der Eisenbahn in die Hauptstadt.", perfekt: "Wir sind mit der Eisenbahn in die Hauptstadt gefahren.", english: "We went to the capital by train." },
-            { present: "Sie fährt im Sommer mit dem Wohnmobil ans Meer.", perfekt: "Sie ist im Sommer mit dem Wohnmobil ans Meer gefahren.", english: "She went to the seaside in a camper van in summer." },
-            { present: "Ich gehe am Morgen zu Fuß an den Strand.", perfekt: "Ich bin am Morgen zu Fuß an den Strand gegangen.", english: "I walked to the beach in the morning." },
-            { present: "Meine Familie fährt mit dem Wohnwagen an die Küste.", perfekt: "Meine Familie ist mit dem Wohnwagen an die Küste gefahren.", english: "My family went to the coast with a caravan." },
-            { present: "Ihr fahrt mit dem Kreuzfahrtschiff auf eine Insel.", perfekt: "Ihr seid mit dem Kreuzfahrtschiff auf eine Insel gefahren.", english: "You (pl.) went to an island on a cruise ship." },
-            { present: "Wir fahren mit der U-Bahn in den Wald.", perfekt: "Wir sind mit der U-Bahn in den Wald gefahren.", english: "We went to the forest by underground." },
-            { present: "Du fährst mit dem Luftkissenboot nach England.", perfekt: "Du bist mit dem Luftkissenboot nach England gefahren.", english: "You went to England by hovercraft." },
-            { present: "Meine Familie wohnt in einer Villa.", perfekt: "Meine Familie hat in einer Villa gewohnt.", english: "My family stayed in a villa." },
-            { present: "Wir bleiben im Hotel mit Vollpension.", perfekt: "Wir sind im Hotel mit Vollpension geblieben.", english: "We stayed in a hotel with full board." },
-            { present: "Sie bleiben in den Ferien zu Hause.", perfekt: "Sie sind in den Ferien zu Hause geblieben.", english: "They stayed at home in the holidays." },
-            { present: "Wir übernachten auf einem Campingplatz.", perfekt: "Wir haben auf einem Campingplatz übernachtet.", english: "We spent the night at a campsite." },
-            { present: "Ich schlafe im Hotel in einem Doppelzimmer.", perfekt: "Ich habe im Hotel in einem Doppelzimmer geschlafen.", english: "I slept in a double room in the hotel." },
-            { present: "Du bleibst in einer Pension mit Halbpension.", perfekt: "Du bist in einer Pension mit Halbpension geblieben.", english: "You stayed in a guesthouse with half board." },
-            { present: "Er übernachtet in einer Jugendherberge mit Frühstück.", perfekt: "Er hat in einer Jugendherberge mit Frühstück übernachtet.", english: "He stayed overnight in a youth hostel with breakfast." },
-            { present: "Wir machen Urlaub auf Balkonien.", perfekt: "Wir haben Urlaub auf Balkonien gemacht.", english: "We had a staycation at home." },
-            { present: "Wir ruhen uns am Nachmittag im Hotel aus.", perfekt: "Wir haben uns am Nachmittag im Hotel ausgeruht.", english: "We rested in the hotel in the afternoon." },
-            { present: "Du baust am Strand Sandburgen.", perfekt: "Du hast am Strand Sandburgen gebaut.", english: "You built sandcastles on the beach." },
-            { present: "Ich segle am Nachmittag auf dem See.", perfekt: "Ich bin am Nachmittag auf dem See gesegelt.", english: "I went sailing on the lake in the afternoon." },
-            { present: "Sie besichtigt mit der Familie eine Stadt.", perfekt: "Sie hat mit der Familie eine Stadt besichtigt.", english: "She visited a city with the family." },
-            { present: "Ich lese am Pool ein Buch.", perfekt: "Ich habe am Pool ein Buch gelesen.", english: "I read a book by the pool." },
-            { present: "Ihr wandert den ganzen Tag in den Bergen.", perfekt: "Ihr seid den ganzen Tag in den Bergen gewandert.", english: "You (pl.) went hiking in the mountains all day." },
-            { present: "Wir treffen am Abend in der Stadt Freunde.", perfekt: "Wir haben am Abend in der Stadt Freunde getroffen.", english: "We met friends in town in the evening." },
-            { present: "Meine Familie sammelt am Strand Muscheln.", perfekt: "Meine Familie hat am Strand Muscheln gesammelt.", english: "My family collected shells on the beach." },
-            { present: "Ich sonne mich jeden Tag am Strand.", perfekt: "Ich habe mich jeden Tag am Strand gesonnt.", english: "I sunbathed on the beach every day." },
-            { present: "Er fährt im Skigebiet Snowboard.", perfekt: "Er ist im Skigebiet Snowboard gefahren.", english: "He went snowboarding at the ski resort." },
-            { present: "Wir kommen um Mitternacht in Berlin an.", perfekt: "Wir sind um Mitternacht in Berlin angekommen.", english: "We arrived in Berlin at midnight." },
-            { present: "Ihr steigt in Frankfurt in den Zug um.", perfekt: "Ihr seid in Frankfurt in den Zug umgestiegen.", english: "You (pl.) changed trains in Frankfurt." },
-            { present: "Wir bekommen im Luxushotel ein Zimmer mit Meerblick.", perfekt: "Wir haben im Luxushotel ein Zimmer mit Meerblick bekommen.", english: "We got a room with a sea view in the luxury hotel." },
-            { present: "Er vergisst zu Hause den Reisepass.", perfekt: "Er hat zu Hause den Reisepass vergessen.", english: "He forgot his passport at home." },
-            { present: "Sie verliert am Strand das Handy.", perfekt: "Sie hat am Strand das Handy verloren.", english: "She lost her phone on the beach." },
-            { present: "Wir probieren im Restaurant die Spezialitäten.", perfekt: "Wir haben im Restaurant die Spezialitäten probiert.", english: "We tried the local specialities in the restaurant." },
-            { present: "Ihr kauft am Morgen im Supermarkt ein.", perfekt: "Ihr habt am Morgen im Supermarkt eingekauft.", english: "You (pl.) went shopping at the supermarket in the morning." },
-            { present: "Ich verbringe viel Zeit mit der Familie.", perfekt: "Ich habe viel Zeit mit der Familie verbracht.", english: "I spent a lot of time with the family." }
-        ];
-
-        const advancedSentences = [
-            {
-                present: "Wir bleiben im Hotel, weil es den ganzen Tag regnet.",
-                perfekt: "Wir sind im Hotel geblieben, weil es den ganzen Tag geregnet hat.",
-                english: "We stayed in the hotel because it rained all day."
-            },
-            {
-                present: "Ich sonne mich am Strand, obwohl das Wetter nicht sehr warm ist.",
-                perfekt: "Ich habe mich am Strand gesonnt, obwohl das Wetter nicht sehr warm gewesen ist.",
-                altPerfekt: "Ich habe mich am Strand gesonnt, obwohl das Wetter nicht sehr warm war.",
-                english: "I sunbathed on the beach although the weather was not very warm."
-            },
-            {
-                present: "Wir fahren mit der Fähre auf eine Insel, weil wir das Meer lieben.",
-                perfekt: "Wir sind mit der Fähre auf eine Insel gefahren, weil wir das Meer geliebt haben.",
-                english: "We went to an island by ferry because we loved the sea."
-            },
-            {
-                present: "Er schläft in einer Jugendherberge, weil er nicht viel Geld ausgibt.",
-                perfekt: "Er hat in einer Jugendherberge geschlafen, weil er nicht viel Geld ausgegeben hat.",
-                english: "He slept in a youth hostel because he didn't spend much money."
-            },
-            {
-                present: "Meine Familie macht Urlaub auf Balkonien, weil wir den Flug verpassen.",
-                perfekt: "Meine Familie hat Urlaub auf Balkonien gemacht, weil wir den Flug verpasst haben.",
-                english: "My family had a staycation at home because we missed the flight."
-            },
-            {
-                present: "Sie besichtigt die Hauptstadt, nachdem sie im Hotel ankommt.",
-                perfekt: "Sie hat die Hauptstadt besichtigt, nachdem sie im Hotel angekommen ist.",
-                english: "She went sightseeing in the capital after she arrived at the hotel."
-            },
-            {
-                present: "Wir gehen am Abend essen, nachdem wir im Meer schwimmen.",
-                perfekt: "Wir sind am Abend essen gegangen, nachdem wir im Meer geschwommen sind.",
-                english: "We went out to eat in the evening after we swam in the sea."
-            },
-            {
-                present: "Ich lese am Pool ein Buch, während meine Freunde im Meer tauchen.",
-                perfekt: "Ich habe am Pool ein Buch gelesen, während meine Freunde im Meer getaucht sind.",
-                english: "I read a book by the pool while my friends went diving in the sea."
-            },
-            {
-                present: "Ihr wandert in den Bergen, obwohl ihr sehr früh aufsteht.",
-                perfekt: "Ihr seid in den Bergen gewandert, obwohl ihr sehr früh aufgestanden seid.",
-                english: "You (pl.) went hiking in the mountains although you got up very early."
-            },
-            {
-                present: "Du rufst die Oma an, weil du das Handy am Strand findest.",
-                perfekt: "Du hast die Oma angerufen, weil du das Handy am Strand gefunden hast.",
-                english: "You phoned grandma because you found the phone on the beach."
-            },
-            {
-                present: "Wir übernachten auf einem Campingplatz, weil das Luxushotel zu viel kostet.",
-                perfekt: "Wir haben auf einem Campingplatz übernachtet, weil das Luxushotel zu viel gekostet hat.",
-                english: "We stayed at a campsite because the luxury hotel cost too much."
-            },
-            {
-                present: "Er fährt mit dem Taxi in die Stadt, weil er den Reisebus verpasst.",
-                perfekt: "Er ist mit dem Taxi in die Stadt gefahren, weil er den Reisebus verpasst hat.",
-                english: "He went into town by taxi because he missed the coach."
-            },
-            {
-                present: "Wir ruhen uns im Bungalow aus, nachdem wir im Wald Rad fahren.",
-                perfekt: "Wir haben uns im Bungalow ausgeruht, nachdem wir im Wald Rad gefahren sind.",
-                english: "We rested in the bungalow after we went cycling in the forest."
-            },
-            {
-                present: "Ich mache viele Fotos, als wir mit dem Boot an die Küste fahren.",
-                perfekt: "Ich habe viele Fotos gemacht, als wir mit dem Boot an die Küste gefahren sind.",
-                english: "I took lots of photos when we went to the coast by boat."
-            },
-            {
-                present: "Sie kauft im Supermarkt ein, bevor sie in der Ferienwohnung kocht.",
-                perfekt: "Sie hat im Supermarkt eingekauft, bevor sie in der Ferienwohnung gekocht hat.",
-                english: "She went shopping at the supermarket before she cooked in the holiday flat."
-            },
-            {
-                present: "Wir entspannen uns am Strand, weil wir im Urlaub viel Zeit verbringen.",
-                perfekt: "Wir haben uns am Strand entspannt, weil wir im Urlaub viel Zeit verbracht haben.",
-                english: "We relaxed on the beach because we spent a lot of time on holiday."
-            },
-            {
-                present: "Ihr steigt in München aus, nachdem ihr in Frankfurt umsteigt.",
-                perfekt: "Ihr seid in München ausgestiegen, nachdem ihr in Frankfurt umgestiegen seid.",
-                english: "You (pl.) got off in Munich after you changed trains in Frankfurt."
-            },
-            {
-                present: "Meine Freunde und ich besuchen ein Museum, weil wir in der Stadt bleiben.",
-                perfekt: "Meine Freunde und ich haben ein Museum besucht, weil wir in der Stadt geblieben sind.",
-                english: "My friends and I visited a museum because we stayed in town."
-            },
-            {
-                present: "Er erlebt im Ausland viel, obwohl er den Reisepass vergisst.",
-                perfekt: "Er hat im Ausland viel erlebt, obwohl er den Reisepass vergessen hat.",
-                english: "He experienced a lot abroad although he forgot his passport."
-            },
-            {
-                present: "Ich bezahle das Hotel mit Karte, bevor ich am Sonntag zurückkomme.",
-                perfekt: "Ich habe das Hotel mit Karte bezahlt, bevor ich am Sonntag zurückgekommen bin.",
-                english: "I paid for the hotel by card before I came back on Sunday."
-            }
-        ];
-
-        const playerColours = ['blue', 'purple', 'amber'];
-        const playerNames = ['Blaues Team', 'Lila Team', 'Gold Team'];
-
-        let players = [];
-        let easyDeck = [];
-        let advDeck = [];
-        let currentMode = 'easy';
-        let currentPlayerIndex = 0;
-        let currentPair = null;
-        let digsRemaining = 0;
-        let gridData = [];
-        const gridSize = 48; 
-        let timeLeft = 480;
-        let timerInterval = null;
-
-        let recognition = null;
-        let isRecording = false;
-        let finalTranscript = "";
-
-        try {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
-                recognition.lang = 'de-DE';
-                recognition.continuous = true;
-                recognition.interimResults = true;
-                
-                recognition.onstart = () => {
-                    isRecording = true;
-                    updateMicButtonUI(true);
-                    document.getElementById('speech-status').innerText = "🔴 Aufnahme läuft... Klicke auf Stopp, wenn du fertig bist.";
-                };
-
-                recognition.onresult = (event) => {
-                    let interimTranscript = "";
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        if (event.results[i].isFinal) {
-                            finalTranscript += event.results[i][0].transcript + " ";
-                        } else {
-                            interimTranscript += event.results[i][0].transcript;
-                        }
-                    }
-                    const input = document.getElementById('answer-input');
-                    input.value = (finalTranscript + interimTranscript).trim();
-                };
-                
-                recognition.onerror = () => {
-                    isRecording = false;
-                    updateMicButtonUI(false);
-                    document.getElementById('speech-status').innerText = "⚠️ Mikrofon-Hinweis: Du kannst jederzeit direkt tippen.";
-                };
-                
-                recognition.onend = () => {
-                    isRecording = false;
-                    updateMicButtonUI(false);
-                    document.getElementById('speech-status').innerText = "✅ Aufnahme gestoppt. Prüfe deinen Satz oder korrigiere ihn.";
-                };
-            }
-        } catch (err) {
-            console.log("SpeechRecognition init error:", err);
-        }
-
-        function updateMicButtonUI(recording) {
-            const micBtn = document.getElementById('mic-btn');
-            const micIcon = document.getElementById('mic-icon');
-            const micLabel = document.getElementById('mic-label');
-            if (!micBtn) return;
-            if (recording) {
-                micBtn.classList.add('mic-listening');
-                micIcon.innerText = "⏹️";
-                micLabel.innerText = "Aufnahme stoppen / Stop";
-            } else {
-                micBtn.classList.remove('mic-listening');
-                micIcon.innerText = "🎤";
-                micLabel.innerText = "Aufnahme starten / Start";
-            }
-        }
-
-        window.toggleSpeech = function() {
-            if (!recognition) {
-                alert("Spracherkennung wird von diesem Browser leider nicht unterstützt. Bitte tippe den Satz direkt ins Textfeld ein.");
-                return;
-            }
-            if (isRecording) {
-                try { recognition.stop(); } catch (e) {}
-            } else {
-                const currentText = document.getElementById('answer-input').value;
-                finalTranscript = currentText ? currentText + " " : "";
-                try {
-                    recognition.start();
-                } catch (e) {
-                    console.log(e);
-                }
-            }
-        };
-
-        window.startGame = function(count) {
-            players = [];
-            for (let i = 0; i < count; i++) {
-                players.push({ 
-                    id: i, 
-                    name: playerNames[i], 
-                    score: 0, 
-                    correctAnswers: 0, 
-                    color: playerColours[i] 
-                });
-            }
-            easyDeck = [...easySentences].sort(() => Math.random() - 0.5);
-            advDeck = [...advancedSentences].sort(() => Math.random() - 0.5);
-            document.getElementById('setup-screen').classList.add('hidden');
-            document.getElementById('game-screen').classList.remove('hidden');
-            initialiseGrid();
-            updatePlayerBoard();
-            startTimer();
-            startNewRound();
-        };
-
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    endGame();
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const display = document.getElementById('timer-display');
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            display.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            if (timeLeft <= 30) display.classList.add('timer-low');
-        }
-
-        function initialiseGrid() {
-            const gridContainer = document.getElementById('treasure-grid');
-            const rewardTypes = [
-                { icon: '🪙', min: 2, max: 10, label: 'Münzen / Coins' },   
-                { icon: '💰', min: 15, max: 35, label: 'Geldbeutel / Purse' }, 
-                { icon: '💍', min: 10, max: 15, label: 'Ring / Ring' }, 
-                { icon: '💎', min: 20, max: 30, label: 'Edelstein / Gem' }, 
-                { icon: '👑', min: 40, max: 60, label: 'Krone / Crown' }, 
-                { icon: '✨', min: 1, max: 5, label: 'Sternenstaub / Stardust' },   
-                { icon: '🦴', min: -5, max: -2, label: 'Knochen / Bone' }, 
-                { icon: '💩', min: -8, max: -4, label: 'Mist / Dirt' }, 
-                { icon: '❌', min: -15, max: -10, label: 'Gefahr / Danger' },
-                { icon: '👟', min: 0, max: 1, label: 'Alter Schuh / Old Shoe' }, 
-                { icon: '🥫', min: 0, max: 1, label: 'Alte Dose / Old Can' }    
+        (function() {
+            const easySentences = [
+                { present: "Wir fahren mit der Fähre auf eine Insel.", perfekt: "Wir sind mit der Fähre auf eine Insel gefahren.", english: "We went to an island by ferry." },
+                { present: "Sie fahren mit dem Auto in ein Dorf.", perfekt: "Sie sind mit dem Auto in ein Dorf gefahren.", english: "They went to a village by car." },
+                { present: "Meine Freunde und ich fahren mit dem Reisebus in ein Skigebiet.", perfekt: "Meine Freunde und ich sind mit dem Reisebus in ein Skigebiet gefahren.", english: "My friends and I went to a ski resort by coach." },
+                { present: "Wir fahren am Samstag in einen Freizeitpark.", perfekt: "Wir sind am Samstag in einen Freizeitpark gefahren.", english: "We went to a theme park on Saturday." },
+                { present: "Ihr fahrt mit dem Fahrrad an den Strand.", perfekt: "Ihr seid mit dem Fahrrad an den Strand gefahren.", english: "You (pl.) went to the beach by bike." },
+                { present: "Ich fahre mit der S-Bahn in die Stadt.", perfekt: "Ich bin mit der S-Bahn in die Stadt gefahren.", english: "I went into town by suburban train." },
+                { present: "Er fliegt mit dem Flugzeug ins Ausland.", perfekt: "Er ist mit dem Flugzeug ins Ausland geflogen.", english: "He flew abroad by plane." },
+                { present: "Wir fahren mit der Eisenbahn in die Hauptstadt.", perfekt: "Wir sind mit der Eisenbahn in die Hauptstadt gefahren.", english: "We went to the capital by train." },
+                { present: "Sie fährt im Sommer mit dem Wohnmobil ans Meer.", perfekt: "Sie ist im Sommer mit dem Wohnmobil ans Meer gefahren.", english: "She went to the seaside in a camper van in summer." },
+                { present: "Ich gehe am Morgen zu Fuß an den Strand.", perfekt: "Ich bin am Morgen zu Fuß an den Strand gegangen.", english: "I walked to the beach in the morning." },
+                { present: "Meine Familie fährt mit dem Wohnwagen an die Küste.", perfekt: "Meine Familie ist mit dem Wohnwagen an die Küste gefahren.", english: "My family went to the coast with a caravan." },
+                { present: "Ihr fahrt mit dem Kreuzfahrtschiff auf eine Insel.", perfekt: "Ihr seid mit dem Kreuzfahrtschiff auf eine Insel gefahren.", english: "You (pl.) went to an island on a cruise ship." },
+                { present: "Wir fahren mit der U-Bahn in den Wald.", perfekt: "Wir sind mit der U-Bahn in den Wald gefahren.", english: "We went to the forest by underground." },
+                { present: "Du fährst mit dem Luftkissenboot nach England.", perfekt: "Du bist mit dem Luftkissenboot nach England gefahren.", english: "You went to England by hovercraft." },
+                { present: "Meine Familie wohnt in einer Villa.", perfekt: "Meine Familie hat in einer Villa gewohnt.", english: "My family stayed in a villa." },
+                { present: "Wir bleiben im Hotel mit Vollpension.", perfekt: "Wir sind im Hotel mit Vollpension geblieben.", english: "We stayed in a hotel with full board." },
+                { present: "Sie bleiben in den Ferien zu Hause.", perfekt: "Sie sind in den Ferien zu Hause geblieben.", english: "They stayed at home in the holidays." },
+                { present: "Wir übernachten auf einem Campingplatz.", perfekt: "Wir haben auf einem Campingplatz übernachtet.", english: "We spent the night at a campsite." },
+                { present: "Ich schlafe im Hotel in einem Doppelzimmer.", perfekt: "Ich habe im Hotel in einem Doppelzimmer geschlafen.", english: "I slept in a double room in the hotel." },
+                { present: "Du bleibst in einer Pension mit Halbpension.", perfekt: "Du bist in einer Pension mit Halbpension geblieben.", english: "You stayed in a guesthouse with half board." },
+                { present: "Er übernachtet in einer Jugendherberge mit Frühstück.", perfekt: "Er hat in einer Jugendherberge mit Frühstück übernachtet.", english: "He stayed overnight in a youth hostel with breakfast." },
+                { present: "Wir machen Urlaub auf Balkonien.", perfekt: "Wir haben Urlaub auf Balkonien gemacht.", english: "We had a staycation at home." },
+                { present: "Wir ruhen uns am Nachmittag im Hotel aus.", perfekt: "Wir haben uns am Nachmittag im Hotel ausgeruht.", english: "We rested in the hotel in the afternoon." },
+                { present: "Du baust am Strand Sandburgen.", perfekt: "Du hast am Strand Sandburgen gebaut.", english: "You built sandcastles on the beach." },
+                { present: "Ich segle am Nachmittag auf dem See.", perfekt: "Ich bin am Nachmittag auf dem See gesegelt.", english: "I went sailing on the lake in the afternoon." },
+                { present: "Sie besichtigt mit der Familie eine Stadt.", perfekt: "Sie hat mit der Familie eine Stadt besichtigt.", english: "She visited a city with the family." },
+                { present: "Ich lese am Pool ein Buch.", perfekt: "Ich habe am Pool ein Buch gelesen.", english: "I read a book by the pool." },
+                { present: "Ihr wandert den ganzen Tag in den Bergen.", perfekt: "Ihr seid den ganzen Tag in den Bergen gewandert.", english: "You (pl.) went hiking in the mountains all day." },
+                { present: "Wir treffen am Abend in der Stadt Freunde.", perfekt: "Wir haben am Abend in der Stadt Freunde getroffen.", english: "We met friends in town in the evening." },
+                { present: "Meine Familie sammelt am Strand Muscheln.", perfekt: "Meine Familie hat am Strand Muscheln gesammelt.", english: "My family collected shells on the beach." },
+                { present: "Ich sonne mich jeden Tag am Strand.", perfekt: "Ich habe mich jeden Tag am Strand gesonnt.", english: "I sunbathed on the beach every day." },
+                { present: "Er fährt im Skigebiet Snowboard.", perfekt: "Er ist im Skigebiet Snowboard gefahren.", english: "He went snowboarding at the ski resort." },
+                { present: "Wir kommen um Mitternacht in Berlin an.", perfekt: "Wir sind um Mitternacht in Berlin angekommen.", english: "We arrived in Berlin at midnight." },
+                { present: "Ihr steigt in Frankfurt in den Zug um.", perfekt: "Ihr seid in Frankfurt in den Zug umgestiegen.", english: "You (pl.) changed trains in Frankfurt." },
+                { present: "Wir bekommen im Luxushotel ein Zimmer mit Meerblick.", perfekt: "Wir haben im Luxushotel ein Zimmer mit Meerblick bekommen.", english: "We got a room with a sea view in the luxury hotel." },
+                { present: "Er vergisst zu Hause den Reisepass.", perfekt: "Er hat zu Hause den Reisepass vergessen.", english: "He forgot his passport at home." },
+                { present: "Sie verliert am Strand das Handy.", perfekt: "Sie hat am Strand das Handy verloren.", english: "She lost her phone on the beach." },
+                { present: "Wir probieren im Restaurant die Spezialitäten.", perfekt: "Wir haben im Restaurant die Spezialitäten probiert.", english: "We tried the local specialities in the restaurant." },
+                { present: "Ihr kauft am Morgen im Supermarkt ein.", perfekt: "Ihr habt am Morgen im Supermarkt eingekauft.", english: "You (pl.) went shopping at the supermarket in the morning." },
+                { present: "Ich verbringe viel Zeit mit der Familie.", perfekt: "Ich habe viel Zeit mit der Familie verbracht.", english: "I spent a lot of time with the family." }
             ];
 
-            let tempRewards = [];
-            for(let i = 0; i < 8; i++) tempRewards.push({...rewardTypes[0]}); 
-            for(let i = 0; i < 5; i++) tempRewards.push({...rewardTypes[1]}); 
-            for(let i = 0; i < 3; i++) tempRewards.push({...rewardTypes[2]}); 
-            for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[3]}); 
-            for(let i = 0; i < 1; i++) tempRewards.push({...rewardTypes[4]}); 
-            for(let i = 0; i < 3; i++) tempRewards.push({...rewardTypes[5]}); 
-            for(let i = 0; i < 3; i++) tempRewards.push({...rewardTypes[6]}); 
-            for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[7]}); 
-            for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[8]}); 
-            for(let i = 0; i < 4; i++) tempRewards.push({...rewardTypes[9]}); 
-            for(let i = 0; i < 4; i++) tempRewards.push({...rewardTypes[10]}); 
+            const advancedSentences = [
+                {
+                    present: "Wir bleiben im Hotel, weil es den ganzen Tag regnet.",
+                    perfekt: "Wir sind im Hotel geblieben, weil es den ganzen Tag geregnet hat.",
+                    english: "We stayed in the hotel because it rained all day."
+                },
+                {
+                    present: "Ich sonne mich am Strand, obwohl das Wetter nicht sehr warm ist.",
+                    perfekt: "Ich habe mich am Strand gesonnt, obwohl das Wetter nicht sehr warm gewesen ist.",
+                    altPerfekt: "Ich habe mich am Strand gesonnt, obwohl das Wetter nicht sehr warm war.",
+                    english: "I sunbathed on the beach although the weather was not very warm."
+                },
+                {
+                    present: "Wir fahren mit der Fähre auf eine Insel, weil wir das Meer lieben.",
+                    perfekt: "Wir sind mit der Fähre auf eine Insel gefahren, weil wir das Meer geliebt haben.",
+                    english: "We went to an island by ferry because we loved the sea."
+                },
+                {
+                    present: "Er schläft in einer Jugendherberge, weil er nicht viel Geld ausgibt.",
+                    perfekt: "Er hat in einer Jugendherberge geschlafen, weil er nicht viel Geld ausgegeben hat.",
+                    english: "He slept in a youth hostel because he didn't spend much money."
+                },
+                {
+                    present: "Meine Familie macht Urlaub auf Balkonien, weil wir den Flug verpassen.",
+                    perfekt: "Meine Familie hat Urlaub auf Balkonien gemacht, weil wir den Flug verpasst haben.",
+                    english: "My family had a staycation at home because we missed the flight."
+                },
+                {
+                    present: "Sie besichtigt die Hauptstadt, nachdem sie im Hotel ankommt.",
+                    perfekt: "Sie hat die Hauptstadt besichtigt, nachdem sie im Hotel angekommen ist.",
+                    english: "She went sightseeing in the capital after she arrived at the hotel."
+                },
+                {
+                    present: "Wir gehen am Abend essen, nachdem wir im Meer schwimmen.",
+                    perfekt: "Wir sind am Abend essen gegangen, nachdem wir im Meer geschwommen sind.",
+                    english: "We went out to eat in the evening after we swam in the sea."
+                },
+                {
+                    present: "Ich lese am Pool ein Buch, während meine Freunde im Meer tauchen.",
+                    perfekt: "Ich habe am Pool ein Buch gelesen, während meine Freunde im Meer getaucht sind.",
+                    english: "I read a book by the pool while my friends went diving in the sea."
+                },
+                {
+                    present: "Ihr wandert in den Bergen, obwohl ihr sehr früh aufsteht.",
+                    perfekt: "Ihr seid in den Bergen gewandert, obwohl ihr sehr früh aufgestanden seid.",
+                    english: "You (pl.) went hiking in the mountains although you got up very early."
+                },
+                {
+                    present: "Du rufst die Oma an, weil du das Handy am Strand findest.",
+                    perfekt: "Du hast die Oma angerufen, weil du das Handy am Strand gefunden hast.",
+                    english: "You phoned grandma because you found the phone on the beach."
+                },
+                {
+                    present: "Wir übernachten auf einem Campingplatz, weil das Luxushotel zu viel kostet.",
+                    perfekt: "Wir haben auf einem Campingplatz übernachtet, weil das Luxushotel zu viel gekostet hat.",
+                    english: "We stayed at a campsite because the luxury hotel cost too much."
+                },
+                {
+                    present: "Er fährt mit dem Taxi in die Stadt, weil er den Reisebus verpasst.",
+                    perfekt: "Er ist mit dem Taxi in die Stadt gefahren, weil er den Reisebus verpasst hat.",
+                    english: "He went into town by taxi because he missed the coach."
+                },
+                {
+                    present: "Wir ruhen uns im Bungalow aus, nachdem wir im Wald Rad fahren.",
+                    perfekt: "Wir haben uns im Bungalow ausgeruht, nachdem wir im Wald Rad gefahren sind.",
+                    english: "We rested in the bungalow after we went cycling in the forest."
+                },
+                {
+                    present: "Ich mache viele Fotos, als wir mit dem Boot an die Küste fahren.",
+                    perfekt: "Ich habe viele Fotos gemacht, als wir mit dem Boot an die Küste gefahren sind.",
+                    english: "I took lots of photos when we went to the coast by boat."
+                },
+                {
+                    present: "Sie kauft im Supermarkt ein, bevor sie in der Ferienwohnung kocht.",
+                    perfekt: "Sie hat im Supermarkt eingekauft, bevor sie in der Ferienwohnung gekocht hat.",
+                    english: "She went shopping at the supermarket before she cooked in the holiday flat."
+                },
+                {
+                    present: "Wir entspannen uns am Strand, weil wir im Urlaub viel Zeit verbringen.",
+                    perfekt: "Wir haben uns am Strand entspannt, weil wir im Urlaub viel Zeit verbracht haben.",
+                    english: "We relaxed on the beach because we spent a lot of time on holiday."
+                },
+                {
+                    present: "Ihr steigt in München aus, nachdem ihr in Frankfurt umsteigt.",
+                    perfekt: "Ihr seid in München ausgestiegen, nachdem ihr in Frankfurt umgestiegen seid.",
+                    english: "You (pl.) got off in Munich after you changed trains in Frankfurt."
+                },
+                {
+                    present: "Meine Freunde und ich besuchen ein Museum, weil wir in der Stadt bleiben.",
+                    perfekt: "Meine Freunde und ich haben ein Museum besucht, weil wir in der Stadt geblieben sind.",
+                    english: "My friends and I visited a museum because we stayed in town."
+                },
+                {
+                    present: "Er erlebt im Ausland viel, obwohl er den Reisepass vergisst.",
+                    perfekt: "Er hat im Ausland viel erlebt, obwohl er den Reisepass vergessen hat.",
+                    english: "He experienced a lot abroad although he forgot his passport."
+                },
+                {
+                    present: "Ich bezahle das Hotel mit Karte, bevor ich am Sonntag zurückkomme.",
+                    perfekt: "Ich habe das Hotel mit Karte bezahlt, bevor ich am Sonntag zurückgekommen bin.",
+                    english: "I paid for the hotel by card before I came back on Sunday."
+                }
+            ];
 
-            while(tempRewards.length < gridSize) {
-                tempRewards.push({ icon: '🕳️', min: 0, max: 0, label: 'Nichts / Nothing' });
+            const playerColours = ['blue', 'purple', 'amber'];
+            const playerNames = ['Blaues Team', 'Lila Team', 'Gold Team'];
+
+            let players = [];
+            let easyDeck = [];
+            let advDeck = [];
+            let currentMode = 'easy';
+            let currentPlayerIndex = 0;
+            let currentPair = null;
+            let digsRemaining = 0;
+            let gridData = [];
+            const gridSize = 48; 
+            let timeLeft = 480;
+            let timerInterval = null;
+
+            let recognition = null;
+            let isRecording = false;
+            let finalTranscript = "";
+
+            try {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    recognition = new SpeechRecognition();
+                    recognition.lang = 'de-DE';
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    
+                    recognition.onstart = function() {
+                        isRecording = true;
+                        updateMicButtonUI(true);
+                        document.getElementById('speech-status').innerText = "🔴 Aufnahme läuft... Klicke auf Stopp, wenn du fertig bist.";
+                    };
+
+                    recognition.onresult = function(event) {
+                        let interimTranscript = "";
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            if (event.results[i].isFinal) {
+                                finalTranscript += event.results[i][0].transcript + " ";
+                            } else {
+                                interimTranscript += event.results[i][0].transcript;
+                            }
+                        }
+                        const input = document.getElementById('answer-input');
+                        input.value = (finalTranscript + interimTranscript).trim();
+                    };
+                    
+                    recognition.onerror = function() {
+                        isRecording = false;
+                        updateMicButtonUI(false);
+                        document.getElementById('speech-status').innerText = "⚠️ Mikrofon-Hinweis: Du kannst jederzeit direkt tippen.";
+                    };
+                    
+                    recognition.onend = function() {
+                        isRecording = false;
+                        updateMicButtonUI(false);
+                        document.getElementById('speech-status').innerText = "✅ Aufnahme gestoppt. Prüfe deinen Satz oder korrigiere ihn.";
+                    };
+                }
+            } catch (err) {}
+
+            function updateMicButtonUI(recording) {
+                const micBtn = document.getElementById('mic-btn');
+                const micIcon = document.getElementById('mic-icon');
+                const micLabel = document.getElementById('mic-label');
+                if (!micBtn) return;
+                if (recording) {
+                    micBtn.classList.add('mic-listening');
+                    micIcon.innerText = "⏹️";
+                    micLabel.innerText = "Aufnahme stoppen / Stop";
+                } else {
+                    micBtn.classList.remove('mic-listening');
+                    micIcon.innerText = "🎤";
+                    micLabel.innerText = "Aufnahme starten / Start";
+                }
             }
-            
-            gridData = tempRewards.sort(() => Math.random() - 0.5).map(item => {
-                const pts = Math.floor(Math.random() * (item.max - item.min + 1)) + item.min;
-                return { icon: item.icon, points: pts, label: item.label };
-            });
-            
-            gridContainer.innerHTML = '';
-            for (let i = 0; i < gridSize; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'grid-tile bg-orange-200 border border-orange-300 rounded-md cursor-pointer h-12 md:h-14 flex items-center justify-center text-xl md:text-2xl shadow-inner';
-                tile.id = `tile-${i}`;
-                tile.onclick = () => handleDig(i);
-                gridContainer.appendChild(tile);
-            }
-        }
 
-        function updatePlayerBoard() {
-            const board = document.getElementById('player-board');
-            board.innerHTML = players.map((p, idx) => `
-                <div class="p-2 md:p-2.5 rounded-xl border transition-all ${idx === currentPlayerIndex ? `active-player bg-white shadow border-${p.color}-500 ring-2 ring-${p.color}-400` : 'bg-slate-100 opacity-60 border-slate-200'}">
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-sm md:text-base text-${p.color}-600">${p.name}</span>
-                        <span class="bg-${p.color}-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">${p.score} Pkt.</span>
-                    </div>
-                    <div class="flex items-center text-[11px] text-slate-500 font-semibold mt-0.5">
-                        <span>✅ Richtig / Correct: <strong class="text-${p.color}-600">${p.correctAnswers}</strong></span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.selectMode = function(mode) {
-            if (document.getElementById('submit-btn').disabled) return;
-            currentMode = mode;
-            updateModeButtonsUI();
-            loadSentenceForCurrentMode();
-        };
-
-        function updateModeButtonsUI() {
-            const easyBtn = document.getElementById('mode-easy-btn');
-            const advBtn = document.getElementById('mode-adv-btn');
-            if (currentMode === 'easy') {
-                easyBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-green-100 border-green-600 text-green-900 shadow-sm cursor-pointer";
-                advBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-slate-50 border-slate-200 text-slate-500 hover:bg-purple-50 cursor-pointer";
-            } else {
-                easyBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-slate-50 border-slate-200 text-slate-500 hover:bg-green-50 cursor-pointer";
-                advBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-purple-100 border-purple-600 text-purple-900 shadow-sm cursor-pointer";
-            }
-        }
-
-        function loadSentenceForCurrentMode() {
-            if (currentMode === 'easy') {
-                if (easyDeck.length === 0) easyDeck = [...easySentences].sort(() => Math.random() - 0.5);
-                currentPair = easyDeck.pop();
-            } else {
-                if (advDeck.length === 0) advDeck = [...advancedSentences].sort(() => Math.random() - 0.5);
-                currentPair = advDeck.pop();
-            }
-            document.getElementById('present-prompt').innerText = currentPair.present;
-            document.getElementById('english-prompt').innerText = currentPair.english;
-        }
-
-        function startNewRound() {
-            if (isRecording && recognition) {
-                try { recognition.stop(); } catch (e) {}
-            }
-            digsRemaining = 0;
-            finalTranscript = "";
-            document.getElementById('continue-btn').classList.add('hidden');
-            
-            const input = document.getElementById('answer-input');
-            const submitBtn = document.getElementById('submit-btn');
-            const micBtn = document.getElementById('mic-btn');
-
-            input.value = '';
-            input.disabled = false;
-            submitBtn.disabled = false;
-            micBtn.disabled = false;
-            updateMicButtonUI(false);
-
-            document.getElementById('feedback-area').innerHTML = '<p class="text-slate-400 italic text-xs">Wähle Einfach oder Profi, sprich oder tippe den Satz im Perfekt!</p>';
-            document.getElementById('speech-status').innerText = "Bereit für Aufnahme oder Tippen...";
-            document.getElementById('grid-status-text').innerHTML = '<span>📍</span> Löse zuerst den Satz...';
-            document.getElementById('dig-count').innerText = "";
-            
-            updateModeButtonsUI();
-            loadSentenceForCurrentMode();
-            updatePlayerBoard();
-        }
-
-        function replaceNumbersWithWords(str) {
-            const numberMap = {
-                '0': 'null', '1': 'ein', '2': 'zwei', '3': 'drei', '4': 'vier',
-                '5': 'fünf', '6': 'sechs', '7': 'sieben', '8': 'acht', '9': 'neun',
-                '10': 'zehn', '11': 'elf', '12': 'zwölf'
-            };
-            return str.replace(/\b\d+\b/g, match => numberMap[match] || match);
-        }
-
-        function normalise(str) {
-            let processed = str.toLowerCase();
-            processed = replaceNumbersWithWords(processed);
-            processed = processed.replace(/\bu bahn\b/g, "u-bahn").replace(/\bs bahn\b/g, "s-bahn");
-            return processed
-                .replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "")
-                .replace(/\s+/g, " ")
-                .trim();
-        }
-
-        window.checkAnswer = function() {
-            if (isRecording && recognition) {
-                try { recognition.stop(); } catch (e) {}
+            function toggleSpeech() {
+                if (!recognition) {
+                    alert("Spracherkennung wird von diesem Browser leider nicht unterstützt. Bitte tippe den Satz direkt ins Textfeld ein.");
+                    return;
+                }
+                if (isRecording) {
+                    try { recognition.stop(); } catch (e) {}
+                } else {
+                    const currentText = document.getElementById('answer-input').value;
+                    finalTranscript = currentText ? currentText + " " : "";
+                    try { recognition.start(); } catch (e) {}
+                }
             }
 
-            const inputVal = document.getElementById('answer-input').value;
-            const normInput = normalise(inputVal);
-            const normCorrect = normalise(currentPair.perfekt);
-            const normAlt = currentPair.altPerfekt ? normalise(currentPair.altPerfekt) : null;
-            
-            const isCorrect = (normInput === normCorrect) || (normAlt && normInput === normAlt);
-            const feedback = document.getElementById('feedback-area');
-            
-            document.getElementById('answer-input').disabled = true;
-            document.getElementById('submit-btn').disabled = true;
-            document.getElementById('mic-btn').disabled = true;
+            function startGame(count) {
+                players = [];
+                for (let i = 0; i < count; i++) {
+                    players.push({ 
+                        id: i, 
+                        name: playerNames[i], 
+                        score: 0, 
+                        correctAnswers: 0, 
+                        color: playerColours[i] 
+                    });
+                }
+                easyDeck = [...easySentences].sort(() => Math.random() - 0.5);
+                advDeck = [...advancedSentences].sort(() => Math.random() - 0.5);
+                document.getElementById('setup-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('hidden');
+                initialiseGrid();
+                updatePlayerBoard();
+                startTimer();
+                startNewRound();
+            }
 
-            const noHelpTiles = currentMode === 'advanced' ? 3 : 2;
-            const withHelpTiles = currentMode === 'advanced' ? 2 : 1;
+            function startTimer() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(function() {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        endGame();
+                    }
+                }, 1000);
+            }
 
-            if (isCorrect) {
-                players[currentPlayerIndex].correctAnswers++;
+            function updateTimerDisplay() {
+                const display = document.getElementById('timer-display');
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                display.innerText = String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+                if (timeLeft <= 30) display.classList.add('timer-low');
+            }
+
+            function initialiseGrid() {
+                const gridContainer = document.getElementById('treasure-grid');
+                const rewardTypes = [
+                    { icon: '🪙', min: 2, max: 10, label: 'Münzen / Coins' },   
+                    { icon: '💰', min: 15, max: 35, label: 'Geldbeutel / Purse' }, 
+                    { icon: '💍', min: 10, max: 15, label: 'Ring / Ring' }, 
+                    { icon: '💎', min: 20, max: 30, label: 'Edelstein / Gem' }, 
+                    { icon: '👑', min: 40, max: 60, label: 'Krone / Crown' }, 
+                    { icon: '✨', min: 1, max: 5, label: 'Sternenstaub / Stardust' },   
+                    { icon: '🦴', min: -5, max: -2, label: 'Knochen / Bone' }, 
+                    { icon: '💩', min: -8, max: -4, label: 'Mist / Dirt' }, 
+                    { icon: '❌', min: -15, max: -10, label: 'Gefahr / Danger' },
+                    { icon: '👟', min: 0, max: 1, label: 'Alter Schuh / Old Shoe' }, 
+                    { icon: '🥫', min: 0, max: 1, label: 'Alte Dose / Old Can' }    
+                ];
+
+                let tempRewards = [];
+                for(let i = 0; i < 8; i++) tempRewards.push( Object.assign({}, rewardTypes[0]) ); 
+                for(let i = 0; i < 5; i++) tempRewards.push( Object.assign({}, rewardTypes[1]) ); 
+                for(let i = 0; i < 3; i++) tempRewards.push( Object.assign({}, rewardTypes[2]) ); 
+                for(let i = 0; i < 2; i++) tempRewards.push( Object.assign({}, rewardTypes[3]) ); 
+                for(let i = 0; i < 1; i++) tempRewards.push( Object.assign({}, rewardTypes[4]) ); 
+                for(let i = 0; i < 3; i++) tempRewards.push( Object.assign({}, rewardTypes[5]) ); 
+                for(let i = 0; i < 3; i++) tempRewards.push( Object.assign({}, rewardTypes[6]) ); 
+                for(let i = 0; i < 2; i++) tempRewards.push( Object.assign({}, rewardTypes[7]) ); 
+                for(let i = 0; i < 2; i++) tempRewards.push( Object.assign({}, rewardTypes[8]) ); 
+                for(let i = 0; i < 4; i++) tempRewards.push( Object.assign({}, rewardTypes[9]) ); 
+                for(let i = 0; i < 4; i++) tempRewards.push( Object.assign({}, rewardTypes[10]) ); 
+
+                while(tempRewards.length < gridSize) {
+                    tempRewards.push({ icon: '🕳️', min: 0, max: 0, label: 'Nichts / Nothing' });
+                }
+                
+                gridData = tempRewards.sort(() => Math.random() - 0.5).map(function(item) {
+                    const pts = Math.floor(Math.random() * (item.max - item.min + 1)) + item.min;
+                    return { icon: item.icon, points: pts, label: item.label };
+                });
+                
+                gridContainer.innerHTML = '';
+                for (let i = 0; i < gridSize; i++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'grid-tile';
+                    tile.id = 'tile-' + i;
+                    tile.addEventListener('click', function() { handleDig(i); });
+                    gridContainer.appendChild(tile);
+                }
+            }
+
+            function updatePlayerBoard() {
+                const board = document.getElementById('player-board');
+                board.innerHTML = players.map(function(p, idx) {
+                    const activeClass = idx === currentPlayerIndex ? 'active' : '';
+                    return '<div class="player-card color-' + p.color + ' ' + activeClass + '">' +
+                        '<div class="player-top">' +
+                            '<span>' + p.name + '</span>' +
+                            '<span class="badge-' + p.color + '">' + p.score + ' Pkt.</span>' +
+                        '</div>' +
+                        '<div class="player-sub">✅ Richtig / Correct: <strong>' + p.correctAnswers + '</strong></div>' +
+                    '</div>';
+                }).join('');
+            }
+
+            function selectMode(mode) {
+                if (document.getElementById('submit-btn').disabled) return;
+                currentMode = mode;
+                updateModeButtonsUI();
+                loadSentenceForCurrentMode();
+            }
+
+            function updateModeButtonsUI() {
+                const easyBtn = document.getElementById('mode-easy-btn');
+                const advBtn = document.getElementById('mode-adv-btn');
+                if (currentMode === 'easy') {
+                    easyBtn.className = "mode-btn easy-active";
+                    advBtn.className = "mode-btn";
+                } else {
+                    easyBtn.className = "mode-btn";
+                    advBtn.className = "mode-btn adv-active";
+                }
+            }
+
+            function loadSentenceForCurrentMode() {
+                if (currentMode === 'easy') {
+                    if (easyDeck.length === 0) easyDeck = [...easySentences].sort(() => Math.random() - 0.5);
+                    currentPair = easyDeck.pop();
+                } else {
+                    if (advDeck.length === 0) advDeck = [...advancedSentences].sort(() => Math.random() - 0.5);
+                    currentPair = advDeck.pop();
+                }
+                document.getElementById('present-prompt').innerText = currentPair.present;
+                document.getElementById('english-prompt').innerText = currentPair.english;
+            }
+
+            function startNewRound() {
+                if (isRecording && recognition) {
+                    try { recognition.stop(); } catch (e) {}
+                }
+                digsRemaining = 0;
+                finalTranscript = "";
+                document.getElementById('continue-btn').classList.add('hidden');
+                
+                const input = document.getElementById('answer-input');
+                const submitBtn = document.getElementById('submit-btn');
+                const micBtn = document.getElementById('mic-btn');
+
+                input.value = '';
+                input.disabled = false;
+                submitBtn.disabled = false;
+                micBtn.disabled = false;
+                updateMicButtonUI(false);
+
+                document.getElementById('feedback-area').innerHTML = '<p style="color:#94a3b8;font-style:italic;">Wähle Einfach oder Profi, sprich oder tippe den Satz im Perfekt!</p>';
+                document.getElementById('speech-status').innerText = "Bereit für Aufnahme oder Tippen...";
+                document.getElementById('grid-status-text').innerText = "📍 Löse zuerst den Satz...";
+                document.getElementById('dig-count').innerText = "";
+                
+                updateModeButtonsUI();
+                loadSentenceForCurrentMode();
+                updatePlayerBoard();
+            }
+
+            function replaceNumbersWithWords(str) {
+                const numberMap = {
+                    '0': 'null', '1': 'ein', '2': 'zwei', '3': 'drei', '4': 'vier',
+                    '5': 'fünf', '6': 'sechs', '7': 'sieben', '8': 'acht', '9': 'neun',
+                    '10': 'zehn', '11': 'elf', '12': 'zwölf'
+                };
+                return str.replace(/\b\d+\b/g, function(match) { return numberMap[match] || match; });
+            }
+
+            function normalise(str) {
+                let processed = str.toLowerCase();
+                processed = replaceNumbersWithWords(processed);
+                processed = processed.replace(/\bu bahn\b/g, "u-bahn").replace(/\bs bahn\b/g, "s-bahn");
+                return processed
+                    .replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+            }
+
+            function checkAnswer() {
+                if (isRecording && recognition) {
+                    try { recognition.stop(); } catch (e) {}
+                }
+
+                const inputVal = document.getElementById('answer-input').value;
+                const normInput = normalise(inputVal);
+                const normCorrect = normalise(currentPair.perfekt);
+                const normAlt = currentPair.altPerfekt ? normalise(currentPair.altPerfekt) : null;
+                
+                const isCorrect = (normInput === normCorrect) || (normAlt && normInput === normAlt);
+                const feedback = document.getElementById('feedback-area');
+                
+                document.getElementById('answer-input').disabled = true;
+                document.getElementById('submit-btn').disabled = true;
+                document.getElementById('mic-btn').disabled = true;
+
+                const noHelpTiles = currentMode === 'advanced' ? 3 : 2;
+                const withHelpTiles = currentMode === 'advanced' ? 2 : 1;
+
+                if (isCorrect) {
+                    players[currentPlayerIndex].correctAnswers++;
+                    updatePlayerBoard();
+                    
+                    feedback.innerHTML = 
+                        '<div style="color:#16a34a;font-weight:900;font-size:0.92rem;margin-bottom:4px;">✅ RICHTIG / CORRECT! ' + (currentMode === 'advanced' ? '🟣 (+1 Profi-Bonus!)' : '') + '</div>' +
+                        '<p style="font-weight:700;font-size:0.75rem;">Hast du Hilfe (z.B. Poster/Notizen) benutzt? / Used help?</p>' +
+                        '<div class="help-choice-row">' +
+                            '<button id="btn-no-help" type="button" class="btn-help-choice" style="background:#22c55e;">Nein, ohne Hilfe (' + noHelpTiles + ' Felder)</button>' +
+                            '<button id="btn-yes-help" type="button" class="btn-help-choice" style="background:#f59e0b;">Ja, mit Hilfe (' + withHelpTiles + (withHelpTiles === 1 ? ' Feld' : ' Felder') + ')</button>' +
+                        '</div>';
+
+                    document.getElementById('btn-no-help').addEventListener('click', function() { chooseHelp(false); });
+                    document.getElementById('btn-yes-help').addEventListener('click', function() { chooseHelp(true); });
+                } else {
+                    feedback.innerHTML = 
+                        '<div style="color:#dc2626;font-weight:800;margin-bottom:4px;">❌ FALSCH / INCORRECT</div>' +
+                        '<div style="width:100%;text-align:left;background:#f8fafc;padding:6px 8px;border-radius:8px;border:1px solid #e2e8f0;font-size:0.74rem;">' +
+                            '<div><strong style="color:#ef4444;">Deine Eingabe:</strong> <span style="font-weight:800;color:#000;">"' + (inputVal || "(leer)") + '"</span></div>' +
+                            '<div style="margin-top:2px;"><strong style="color:#2563eb;">Perfekt-Lösung:</strong> <span style="font-weight:800;color:#000;">' + currentPair.perfekt + '</span></div>' +
+                        '</div>';
+                    document.getElementById('continue-btn').classList.remove('hidden');
+                    document.getElementById('grid-status-text').innerText = "👎 Leider falsch / Incorrect";
+                }
+            }
+
+            function chooseHelp(usedHelp) {
+                const baseTiles = usedHelp ? 1 : 2;
+                const bonus = currentMode === 'advanced' ? 1 : 0;
+                digsRemaining = baseTiles + bonus;
+
+                const feedback = document.getElementById('feedback-area');
+                feedback.innerHTML = 
+                    '<div style="color:#16a34a;font-weight:800;margin-bottom:2px;">🎉 Super!</div>' +
+                    '<p style="font-weight:800;">Grabe jetzt <span style="color:#16a34a;text-decoration:underline;">' + digsRemaining + ' ' + (digsRemaining === 1 ? 'Feld' : 'Felder') + '</span> im Raster auf! / Dig ' + digsRemaining + ' tile(s)!</p>';
+                document.getElementById('grid-status-text').innerText = "⛏️ " + digsRemaining + " Zug" + (digsRemaining > 1 ? "e" : "") + " übrig / left";
+                document.getElementById('dig-count').innerText = "👉 Klicke ins Raster / Click grid";
+            }
+
+            function handleDig(index) {
+                if (digsRemaining <= 0) return;
+                const tile = document.getElementById('tile-' + index);
+                if (tile.classList.contains('revealed')) return;
+
+                const content = gridData[index];
+                tile.classList.add('revealed');
+                tile.innerText = content.icon;
+                players[currentPlayerIndex].score += content.points;
                 updatePlayerBoard();
                 
-                feedback.innerHTML = `
-                    <div class="text-green-600 font-black text-sm mb-1">✅ RICHTIG / CORRECT! ${currentMode === 'advanced' ? '🟣 (+1 Profi-Bonus!)' : ''}</div>
-                    <p class="text-slate-700 text-xs font-bold mb-1">Hast du Hilfe (z.B. Poster/Notizen) benutzt? / Used help?</p>
-                    <div class="flex gap-2 w-full">
-                        <button type="button" onclick="window.chooseHelp(false)" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 px-2 rounded text-xs shadow cursor-pointer">
-                            Nein, ohne Hilfe (${noHelpTiles} Felder)
-                        </button>
-                        <button type="button" onclick="window.chooseHelp(true)" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-2 rounded text-xs shadow cursor-pointer">
-                            Ja, mit Hilfe (${withHelpTiles} ${withHelpTiles === 1 ? 'Feld' : 'Felder'})
-                        </button>
-                    </div>
-                `;
-            } else {
-                feedback.innerHTML = `
-                    <div class="text-red-600 font-bold text-xs mb-1">❌ FALSCH / INCORRECT</div>
-                    <div class="w-full grid grid-cols-1 gap-0.5 text-left bg-slate-50 p-2 rounded border border-slate-200">
-                        <div class="text-[11px]"><strong class="text-red-500">Deine Eingabe:</strong> <span class="font-bold text-black">"${inputVal || "(leer)"}"</span></div>
-                        <div class="text-[11px]"><strong class="text-blue-600">Perfekt-Lösung:</strong> <span class="font-bold text-black">${currentPair.perfekt}</span></div>
-                    </div>
-                `;
-                document.getElementById('continue-btn').classList.remove('hidden');
-                document.getElementById('grid-status-text').innerHTML = '<span>👎</span> Leider falsch / Incorrect';
-            }
-        };
+                digsRemaining--;
+                
+                let resultText = "";
+                if (content.icon === '🕳️') {
+                    resultText = "Nichts / Nothing";
+                } else if (content.points > 0) {
+                    resultText = content.label + ": +" + content.points;
+                } else {
+                    resultText = content.label + ": " + content.points;
+                }
+                
+                document.getElementById('dig-count').innerText = resultText;
 
-        window.chooseHelp = function(usedHelp) {
-            const baseTiles = usedHelp ? 1 : 2;
-            const bonus = currentMode === 'advanced' ? 1 : 0;
-            digsRemaining = baseTiles + bonus;
+                if (digsRemaining > 0) {
+                    document.getElementById('grid-status-text').innerText = "⛏️ Noch " + digsRemaining + " Zug übrig / left";
+                } else {
+                    document.getElementById('grid-status-text').innerText = "✅ Fertig / Done!";
+                    document.getElementById('continue-btn').classList.remove('hidden');
+                }
 
-            const feedback = document.getElementById('feedback-area');
-            feedback.innerHTML = `
-                <div class="text-green-600 font-bold text-xs mb-0.5">🎉 Super!</div>
-                <p class="text-slate-700 text-xs font-bold">Grabe jetzt <span class="text-green-600 underline">${digsRemaining} ${digsRemaining === 1 ? 'Feld' : 'Felder'}</span> im Raster auf! / Dig ${digsRemaining} tile(s)!</p>
-            `;
-            document.getElementById('grid-status-text').innerHTML = `<span class="text-green-500 font-bold">⛏️ ${digsRemaining} Zug${digsRemaining > 1 ? 'e' : ''} übrig / left</span>`;
-            document.getElementById('dig-count').innerText = `👉 Klicke ins Raster / Click grid`;
-        };
-
-        function handleDig(index) {
-            if (digsRemaining <= 0) return;
-            const tile = document.getElementById(`tile-${index}`);
-            if (tile.classList.contains('revealed')) return;
-
-            const content = gridData[index];
-            tile.classList.add('revealed');
-            tile.classList.remove('bg-orange-200', 'cursor-pointer');
-            tile.classList.add('bg-white', 'treasure-reveal', 'border-slate-100');
-            
-            tile.innerText = content.icon;
-            players[currentPlayerIndex].score += content.points;
-            updatePlayerBoard();
-            
-            digsRemaining--;
-            
-            let resultText = "";
-            if (content.icon === '🕳️') {
-                resultText = "Nichts / Nothing";
-            } else if (content.points > 0) {
-                resultText = `${content.label}: +${content.points}`;
-            } else {
-                resultText = `${content.label}: ${content.points}`;
-            }
-            
-            document.getElementById('dig-count').innerText = resultText;
-
-            if (digsRemaining > 0) {
-                document.getElementById('grid-status-text').innerHTML = `<span class="text-green-500 font-bold">⛏️ Noch ${digsRemaining} Zug${digsRemaining > 1 ? 'e' : ''} übrig / left</span>`;
-            } else {
-                document.getElementById('grid-status-text').innerHTML = '<span>✅</span> Fertig / Done!';
-                document.getElementById('continue-btn').classList.remove('hidden');
+                if (isGridFull()) endGame();
             }
 
-            if (isGridFull()) endGame();
-        }
-
-        window.nextTurn = function() {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-            startNewRound();
-        };
-
-        function isGridFull() {
-            return document.querySelectorAll('.grid-tile:not(.revealed)').length === 0;
-        }
-
-        function endGame() {
-            if (timerInterval) clearInterval(timerInterval);
-            if (isRecording && recognition) {
-                try { recognition.stop(); } catch (e) {}
+            function nextTurn() {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                startNewRound();
             }
-            document.getElementById('game-screen').classList.add('hidden');
-            document.getElementById('finish-screen').classList.remove('hidden');
-            const ranking = [...players].sort((a, b) => b.score - a.score);
-            const rankingList = document.getElementById('final-ranking');
-            rankingList.innerHTML = ranking.map((p, i) => `
-                <div class="flex items-center justify-between bg-white p-4 rounded-xl border-2 border-${p.color}-500 shadow">
-                    <div class="flex flex-col text-left">
-                        <span class="text-xl font-bold">${i + 1}. ${p.name}</span>
-                        <span class="text-xs text-slate-500">✅ ${p.correctAnswers} Richtig / Correct</span>
-                    </div>
-                    <span class="text-lg font-bold text-green-600">${p.score} Pkt.</span>
-                </div>
-            `).join('');
-        }
+
+            function isGridFull() {
+                return document.querySelectorAll('.grid-tile:not(.revealed)').length === 0;
+            }
+
+            function endGame() {
+                if (timerInterval) clearInterval(timerInterval);
+                if (isRecording && recognition) {
+                    try { recognition.stop(); } catch (e) {}
+                }
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('finish-screen').classList.remove('hidden');
+                const ranking = [...players].sort((a, b) => b.score - a.score);
+                const rankingList = document.getElementById('final-ranking');
+                rankingList.innerHTML = ranking.map(function(p, i) {
+                    return '<div style="display:flex;justify-content:space-between;align-items:center;background:#fff;padding:14px;border-radius:12px;border:2px solid #cbd5e1;box-shadow:0 2px 6px rgba(0,0,0,0.06);">' +
+                        '<div style="text-align:left;">' +
+                            '<div style="font-size:1.2rem;font-weight:800;">' + (i + 1) + '. ' + p.name + '</div>' +
+                            '<div style="font-size:0.75rem;color:#64748b;">✅ ' + p.correctAnswers + ' Richtig / Correct</div>' +
+                        '</div>' +
+                        '<div style="font-size:1.1rem;font-weight:800;color:#16a34a;">' + p.score + ' Pkt.</div>' +
+                    '</div>';
+                }).join('');
+            }
+
+            // Wire up all buttons directly
+            document.getElementById('btn-2p').addEventListener('click', function() { startGame(2); });
+            document.getElementById('btn-3p').addEventListener('click', function() { startGame(3); });
+            document.getElementById('mode-easy-btn').addEventListener('click', function() { selectMode('easy'); });
+            document.getElementById('mode-adv-btn').addEventListener('click', function() { selectMode('advanced'); });
+            document.getElementById('mic-btn').addEventListener('click', toggleSpeech);
+            document.getElementById('submit-btn').addEventListener('click', checkAnswer);
+            document.getElementById('continue-btn').addEventListener('click', nextTurn);
+            document.getElementById('restart-btn').addEventListener('click', function() { location.reload(); });
+        })();
     </script>
 </body>
 </html>
