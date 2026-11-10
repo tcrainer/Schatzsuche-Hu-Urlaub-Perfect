@@ -71,8 +71,8 @@
         <div id="setup-screen" class="p-8 text-center">
             <h2 class="text-xl font-bold mb-4 text-slate-700">Wie viele Abenteurer seid ihr? / How many adventurers?</h2>
             <div class="flex justify-center gap-4">
-                <button onclick="startGame(2)" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95">2 Spieler</button>
-                <button onclick="startGame(3)" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95">3 Spieler</button>
+                <button id="btn-2p" type="button" onclick="window.startGame(2)" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95 cursor-pointer">2 Spieler</button>
+                <button id="btn-3p" type="button" onclick="window.startGame(3)" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95 cursor-pointer">3 Spieler</button>
             </div>
         </div>
 
@@ -89,10 +89,10 @@
                 <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
                     <p class="text-[10px] uppercase font-bold text-slate-400 text-center mb-1.5">Schwierigkeit wählen / Choose Level:</p>
                     <div class="grid grid-cols-2 gap-2">
-                        <button id="mode-easy-btn" onclick="selectMode('easy')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all">
+                        <button id="mode-easy-btn" type="button" onclick="window.selectMode('easy')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all cursor-pointer">
                             🟢 Einfach (Hauptsatz TMP)<br><span class="text-[10px] font-normal">1–2 Felder / tiles</span>
                         </button>
-                        <button id="mode-adv-btn" onclick="selectMode('advanced')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all">
+                        <button id="mode-adv-btn" type="button" onclick="window.selectMode('advanced')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all cursor-pointer">
                             🟣 Profi (+ Nebensatz)<br><span class="text-[10px] font-normal">Bonus: 2–3 Felder / tiles!</span>
                         </button>
                     </div>
@@ -117,12 +117,12 @@
                     ></textarea>
                     
                     <div class="flex gap-2">
-                        <button id="mic-btn" onclick="toggleSpeech()" 
-                                class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all">
+                        <button id="mic-btn" type="button" onclick="window.toggleSpeech()" 
+                                class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all cursor-pointer">
                             <span id="mic-icon">🎤</span> <span id="mic-label">Aufnahme starten / Start</span>
                         </button>
-                        <button id="submit-btn" onclick="checkAnswer()"
-                                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-2 px-3 rounded-xl shadow transition-all text-xs md:text-sm">
+                        <button id="submit-btn" type="button" onclick="window.checkAnswer()"
+                                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-2 px-3 rounded-xl shadow transition-all text-xs md:text-sm cursor-pointer">
                             PRÜFEN / CHECK ✓
                         </button>
                     </div>
@@ -134,8 +134,8 @@
                     <p class="text-slate-400 italic">Wähle Einfach oder Profi, bilde den Satz im Perfekt und klicke auf PRÜFEN!</p>
                 </div>
 
-                <button id="continue-btn" onclick="nextTurn()" 
-                        class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all animate-pulse text-sm md:text-base">
+                <button id="continue-btn" type="button" onclick="window.nextTurn()" 
+                        class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all animate-pulse text-sm md:text-base cursor-pointer">
                     Nächster Spieler / Next Player ➔
                 </button>
             </div>
@@ -157,14 +157,11 @@
         <div id="finish-screen" class="hidden p-8 text-center">
             <h2 class="text-4xl title-font mb-4 text-green-600">Spiel Beendet! / Game Over!</h2>
             <div id="final-ranking" class="max-w-md mx-auto mb-6 space-y-3"></div>
-            <button onclick="location.reload()" class="bg-green-600 text-white px-8 py-4 rounded-2xl text-xl title-font hover:bg-green-700 transition-colors shadow-lg">Nochmal spielen / Play Again</button>
+            <button type="button" onclick="location.reload()" class="bg-green-600 text-white px-8 py-4 rounded-2xl text-xl title-font hover:bg-green-700 transition-colors shadow-lg cursor-pointer">Nochmal spielen / Play Again</button>
         </div>
     </div>
 
     <script>
-        /**
-         * EASY SENTENCES: Main clauses with TMP (Time - Manner - Place), separable/inseparable verbs, haben vs sein.
-         */
         const easySentences = [
             { present: "Wir fahren mit der Fähre auf eine Insel.", perfekt: "Wir sind mit der Fähre auf eine Insel gefahren.", english: "We went to an island by ferry." },
             { present: "Sie fahren mit dem Auto in ein Dorf.", perfekt: "Sie sind mit dem Auto in ein Dorf gefahren.", english: "They went to a village by car." },
@@ -208,9 +205,6 @@
             { present: "Ich verbringe viel Zeit mit der Familie.", perfekt: "Ich habe viel Zeit mit der Familie verbracht.", english: "I spent a lot of time with the family." }
         ];
 
-        /**
-         * ADVANCED SENTENCES: Main Clause + Subordinate Clause (weil, obwohl, als, nachdem) in Perfekt.
-         */
         const advancedSentences = [
             {
                 present: "Wir bleiben im Hotel, weil es den ganzen Tag regnet.",
@@ -330,54 +324,58 @@
         let timeLeft = 480;
         let timerInterval = null;
 
-        // Speech Recognition with manual Start & Stop control
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let isRecording = false;
         let finalTranscript = "";
 
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'de-DE';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            
-            recognition.onstart = () => {
-                isRecording = true;
-                updateMicButtonUI(true);
-                document.getElementById('speech-status').innerText = "🔴 Aufnahme läuft... Klicke auf Stopp, wenn du fertig bist.";
-            };
+        try {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'de-DE';
+                recognition.continuous = true;
+                recognition.interimResults = true;
+                
+                recognition.onstart = () => {
+                    isRecording = true;
+                    updateMicButtonUI(true);
+                    document.getElementById('speech-status').innerText = "🔴 Aufnahme läuft... Klicke auf Stopp, wenn du fertig bist.";
+                };
 
-            recognition.onresult = (event) => {
-                let interimTranscript = "";
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript + " ";
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
+                recognition.onresult = (event) => {
+                    let interimTranscript = "";
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript + " ";
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
                     }
-                }
-                const input = document.getElementById('answer-input');
-                input.value = (finalTranscript + interimTranscript).trim();
-            };
-            
-            recognition.onerror = () => {
-                isRecording = false;
-                updateMicButtonUI(false);
-                document.getElementById('speech-status').innerText = "⚠️ Mikrofon-Hinweis: Du kannst jederzeit direkt tippen.";
-            };
-            
-            recognition.onend = () => {
-                isRecording = false;
-                updateMicButtonUI(false);
-                document.getElementById('speech-status').innerText = "✅ Aufnahme gestoppt. Prüfe deinen Satz oder korrigiere ihn.";
-            };
+                    const input = document.getElementById('answer-input');
+                    input.value = (finalTranscript + interimTranscript).trim();
+                };
+                
+                recognition.onerror = () => {
+                    isRecording = false;
+                    updateMicButtonUI(false);
+                    document.getElementById('speech-status').innerText = "⚠️ Mikrofon-Hinweis: Du kannst jederzeit direkt tippen.";
+                };
+                
+                recognition.onend = () => {
+                    isRecording = false;
+                    updateMicButtonUI(false);
+                    document.getElementById('speech-status').innerText = "✅ Aufnahme gestoppt. Prüfe deinen Satz oder korrigiere ihn.";
+                };
+            }
+        } catch (err) {
+            console.log("SpeechRecognition init error:", err);
         }
 
         function updateMicButtonUI(recording) {
             const micBtn = document.getElementById('mic-btn');
             const micIcon = document.getElementById('mic-icon');
             const micLabel = document.getElementById('mic-label');
+            if (!micBtn) return;
             if (recording) {
                 micBtn.classList.add('mic-listening');
                 micIcon.innerText = "⏹️";
@@ -389,24 +387,25 @@
             }
         }
 
-        function toggleSpeech() {
+        window.toggleSpeech = function() {
             if (!recognition) {
                 alert("Spracherkennung wird von diesem Browser leider nicht unterstützt. Bitte tippe den Satz direkt ins Textfeld ein.");
                 return;
             }
             if (isRecording) {
-                recognition.stop();
+                try { recognition.stop(); } catch (e) {}
             } else {
-                finalTranscript = document.getElementById('answer-input').value ? document.getElementById('answer-input').value + " " : "";
+                const currentText = document.getElementById('answer-input').value;
+                finalTranscript = currentText ? currentText + " " : "";
                 try {
                     recognition.start();
                 } catch (e) {
                     console.log(e);
                 }
             }
-        }
+        };
 
-        function startGame(count) {
+        window.startGame = function(count) {
             players = [];
             for (let i = 0; i < count; i++) {
                 players.push({ 
@@ -425,7 +424,7 @@
             updatePlayerBoard();
             startTimer();
             startNewRound();
-        }
+        };
 
         function startTimer() {
             if (timerInterval) clearInterval(timerInterval);
@@ -474,4 +473,248 @@
             for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[7]}); 
             for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[8]}); 
             for(let i = 0; i < 4; i++) tempRewards.push({...rewardTypes[9]}); 
-            for(
+            for(let i = 0; i < 4; i++) tempRewards.push({...rewardTypes[10]}); 
+
+            while(tempRewards.length < gridSize) {
+                tempRewards.push({ icon: '🕳️', min: 0, max: 0, label: 'Nichts / Nothing' });
+            }
+            
+            gridData = tempRewards.sort(() => Math.random() - 0.5).map(item => {
+                const pts = Math.floor(Math.random() * (item.max - item.min + 1)) + item.min;
+                return { icon: item.icon, points: pts, label: item.label };
+            });
+            
+            gridContainer.innerHTML = '';
+            for (let i = 0; i < gridSize; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'grid-tile bg-orange-200 border border-orange-300 rounded-md cursor-pointer h-12 md:h-14 flex items-center justify-center text-xl md:text-2xl shadow-inner';
+                tile.id = `tile-${i}`;
+                tile.onclick = () => handleDig(i);
+                gridContainer.appendChild(tile);
+            }
+        }
+
+        function updatePlayerBoard() {
+            const board = document.getElementById('player-board');
+            board.innerHTML = players.map((p, idx) => `
+                <div class="p-2 md:p-2.5 rounded-xl border transition-all ${idx === currentPlayerIndex ? `active-player bg-white shadow border-${p.color}-500 ring-2 ring-${p.color}-400` : 'bg-slate-100 opacity-60 border-slate-200'}">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm md:text-base text-${p.color}-600">${p.name}</span>
+                        <span class="bg-${p.color}-500 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-sm">${p.score} Pkt.</span>
+                    </div>
+                    <div class="flex items-center text-[11px] text-slate-500 font-semibold mt-0.5">
+                        <span>✅ Richtig / Correct: <strong class="text-${p.color}-600">${p.correctAnswers}</strong></span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.selectMode = function(mode) {
+            if (document.getElementById('submit-btn').disabled) return;
+            currentMode = mode;
+            updateModeButtonsUI();
+            loadSentenceForCurrentMode();
+        };
+
+        function updateModeButtonsUI() {
+            const easyBtn = document.getElementById('mode-easy-btn');
+            const advBtn = document.getElementById('mode-adv-btn');
+            if (currentMode === 'easy') {
+                easyBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-green-100 border-green-600 text-green-900 shadow-sm cursor-pointer";
+                advBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-slate-50 border-slate-200 text-slate-500 hover:bg-purple-50 cursor-pointer";
+            } else {
+                easyBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-slate-50 border-slate-200 text-slate-500 hover:bg-green-50 cursor-pointer";
+                advBtn.className = "py-1.5 px-2 rounded-lg font-bold text-xs border-2 bg-purple-100 border-purple-600 text-purple-900 shadow-sm cursor-pointer";
+            }
+        }
+
+        function loadSentenceForCurrentMode() {
+            if (currentMode === 'easy') {
+                if (easyDeck.length === 0) easyDeck = [...easySentences].sort(() => Math.random() - 0.5);
+                currentPair = easyDeck.pop();
+            } else {
+                if (advDeck.length === 0) advDeck = [...advancedSentences].sort(() => Math.random() - 0.5);
+                currentPair = advDeck.pop();
+            }
+            document.getElementById('present-prompt').innerText = currentPair.present;
+            document.getElementById('english-prompt').innerText = currentPair.english;
+        }
+
+        function startNewRound() {
+            if (isRecording && recognition) {
+                try { recognition.stop(); } catch (e) {}
+            }
+            digsRemaining = 0;
+            finalTranscript = "";
+            document.getElementById('continue-btn').classList.add('hidden');
+            
+            const input = document.getElementById('answer-input');
+            const submitBtn = document.getElementById('submit-btn');
+            const micBtn = document.getElementById('mic-btn');
+
+            input.value = '';
+            input.disabled = false;
+            submitBtn.disabled = false;
+            micBtn.disabled = false;
+            updateMicButtonUI(false);
+
+            document.getElementById('feedback-area').innerHTML = '<p class="text-slate-400 italic text-xs">Wähle Einfach oder Profi, sprich oder tippe den Satz im Perfekt!</p>';
+            document.getElementById('speech-status').innerText = "Bereit für Aufnahme oder Tippen...";
+            document.getElementById('grid-status-text').innerHTML = '<span>📍</span> Löse zuerst den Satz...';
+            document.getElementById('dig-count').innerText = "";
+            
+            updateModeButtonsUI();
+            loadSentenceForCurrentMode();
+            updatePlayerBoard();
+        }
+
+        function replaceNumbersWithWords(str) {
+            const numberMap = {
+                '0': 'null', '1': 'ein', '2': 'zwei', '3': 'drei', '4': 'vier',
+                '5': 'fünf', '6': 'sechs', '7': 'sieben', '8': 'acht', '9': 'neun',
+                '10': 'zehn', '11': 'elf', '12': 'zwölf'
+            };
+            return str.replace(/\b\d+\b/g, match => numberMap[match] || match);
+        }
+
+        function normalise(str) {
+            let processed = str.toLowerCase();
+            processed = replaceNumbersWithWords(processed);
+            processed = processed.replace(/\bu bahn\b/g, "u-bahn").replace(/\bs bahn\b/g, "s-bahn");
+            return processed
+                .replace(/[.,/#!$%^&*;:{}=\-_`~()?]/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        window.checkAnswer = function() {
+            if (isRecording && recognition) {
+                try { recognition.stop(); } catch (e) {}
+            }
+
+            const inputVal = document.getElementById('answer-input').value;
+            const normInput = normalise(inputVal);
+            const normCorrect = normalise(currentPair.perfekt);
+            const normAlt = currentPair.altPerfekt ? normalise(currentPair.altPerfekt) : null;
+            
+            const isCorrect = (normInput === normCorrect) || (normAlt && normInput === normAlt);
+            const feedback = document.getElementById('feedback-area');
+            
+            document.getElementById('answer-input').disabled = true;
+            document.getElementById('submit-btn').disabled = true;
+            document.getElementById('mic-btn').disabled = true;
+
+            const noHelpTiles = currentMode === 'advanced' ? 3 : 2;
+            const withHelpTiles = currentMode === 'advanced' ? 2 : 1;
+
+            if (isCorrect) {
+                players[currentPlayerIndex].correctAnswers++;
+                updatePlayerBoard();
+                
+                feedback.innerHTML = `
+                    <div class="text-green-600 font-black text-sm mb-1">✅ RICHTIG / CORRECT! ${currentMode === 'advanced' ? '🟣 (+1 Profi-Bonus!)' : ''}</div>
+                    <p class="text-slate-700 text-xs font-bold mb-1">Hast du Hilfe (z.B. Poster/Notizen) benutzt? / Used help?</p>
+                    <div class="flex gap-2 w-full">
+                        <button type="button" onclick="window.chooseHelp(false)" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 px-2 rounded text-xs shadow cursor-pointer">
+                            Nein, ohne Hilfe (${noHelpTiles} Felder)
+                        </button>
+                        <button type="button" onclick="window.chooseHelp(true)" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-2 rounded text-xs shadow cursor-pointer">
+                            Ja, mit Hilfe (${withHelpTiles} ${withHelpTiles === 1 ? 'Feld' : 'Felder'})
+                        </button>
+                    </div>
+                `;
+            } else {
+                feedback.innerHTML = `
+                    <div class="text-red-600 font-bold text-xs mb-1">❌ FALSCH / INCORRECT</div>
+                    <div class="w-full grid grid-cols-1 gap-0.5 text-left bg-slate-50 p-2 rounded border border-slate-200">
+                        <div class="text-[11px]"><strong class="text-red-500">Deine Eingabe:</strong> <span class="font-bold text-black">"${inputVal || "(leer)"}"</span></div>
+                        <div class="text-[11px]"><strong class="text-blue-600">Perfekt-Lösung:</strong> <span class="font-bold text-black">${currentPair.perfekt}</span></div>
+                    </div>
+                `;
+                document.getElementById('continue-btn').classList.remove('hidden');
+                document.getElementById('grid-status-text').innerHTML = '<span>👎</span> Leider falsch / Incorrect';
+            }
+        };
+
+        window.chooseHelp = function(usedHelp) {
+            const baseTiles = usedHelp ? 1 : 2;
+            const bonus = currentMode === 'advanced' ? 1 : 0;
+            digsRemaining = baseTiles + bonus;
+
+            const feedback = document.getElementById('feedback-area');
+            feedback.innerHTML = `
+                <div class="text-green-600 font-bold text-xs mb-0.5">🎉 Super!</div>
+                <p class="text-slate-700 text-xs font-bold">Grabe jetzt <span class="text-green-600 underline">${digsRemaining} ${digsRemaining === 1 ? 'Feld' : 'Felder'}</span> im Raster auf! / Dig ${digsRemaining} tile(s)!</p>
+            `;
+            document.getElementById('grid-status-text').innerHTML = `<span class="text-green-500 font-bold">⛏️ ${digsRemaining} Zug${digsRemaining > 1 ? 'e' : ''} übrig / left</span>`;
+            document.getElementById('dig-count').innerText = `👉 Klicke ins Raster / Click grid`;
+        };
+
+        function handleDig(index) {
+            if (digsRemaining <= 0) return;
+            const tile = document.getElementById(`tile-${index}`);
+            if (tile.classList.contains('revealed')) return;
+
+            const content = gridData[index];
+            tile.classList.add('revealed');
+            tile.classList.remove('bg-orange-200', 'cursor-pointer');
+            tile.classList.add('bg-white', 'treasure-reveal', 'border-slate-100');
+            
+            tile.innerText = content.icon;
+            players[currentPlayerIndex].score += content.points;
+            updatePlayerBoard();
+            
+            digsRemaining--;
+            
+            let resultText = "";
+            if (content.icon === '🕳️') {
+                resultText = "Nichts / Nothing";
+            } else if (content.points > 0) {
+                resultText = `${content.label}: +${content.points}`;
+            } else {
+                resultText = `${content.label}: ${content.points}`;
+            }
+            
+            document.getElementById('dig-count').innerText = resultText;
+
+            if (digsRemaining > 0) {
+                document.getElementById('grid-status-text').innerHTML = `<span class="text-green-500 font-bold">⛏️ Noch ${digsRemaining} Zug${digsRemaining > 1 ? 'e' : ''} übrig / left</span>`;
+            } else {
+                document.getElementById('grid-status-text').innerHTML = '<span>✅</span> Fertig / Done!';
+                document.getElementById('continue-btn').classList.remove('hidden');
+            }
+
+            if (isGridFull()) endGame();
+        }
+
+        window.nextTurn = function() {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            startNewRound();
+        };
+
+        function isGridFull() {
+            return document.querySelectorAll('.grid-tile:not(.revealed)').length === 0;
+        }
+
+        function endGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            if (isRecording && recognition) {
+                try { recognition.stop(); } catch (e) {}
+            }
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('finish-screen').classList.remove('hidden');
+            const ranking = [...players].sort((a, b) => b.score - a.score);
+            const rankingList = document.getElementById('final-ranking');
+            rankingList.innerHTML = ranking.map((p, i) => `
+                <div class="flex items-center justify-between bg-white p-4 rounded-xl border-2 border-${p.color}-500 shadow">
+                    <div class="flex flex-col text-left">
+                        <span class="text-xl font-bold">${i + 1}. ${p.name}</span>
+                        <span class="text-xs text-slate-500">✅ ${p.correctAnswers} Richtig / Correct</span>
+                    </div>
+                    <span class="text-lg font-bold text-green-600">${p.score} Pkt.</span>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
