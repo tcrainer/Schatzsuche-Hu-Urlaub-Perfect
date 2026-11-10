@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schatzsuche: Urlaub (Präsens → Perfekt)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f0fdf4;
+            overscroll-behavior: none;
+        }
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        .grid-tile {
+            transition: all 0.2s ease;
+            perspective: 1000px;
+        }
+        .grid-tile:not(.revealed):hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        .treasure-reveal {
+            animation: bounce 0.5s ease-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .active-player {
+            transform: scale(1.02);
+        }
+        .timer-low {
+            color: #ef4444;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .mic-listening {
+            animation: pulse-ring 1.2s infinite;
+            background-color: #dc2626 !important;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.8); }
+            70% { box-shadow: 0 0 0 14px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen p-2 md:p-4 flex flex-col justify-center">
+
+    <div id="app" class="max-w-7xl w-full mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-green-200">
+        <!-- Header Section -->
+        <header class="bg-green-600 px-4 py-2.5 text-white flex flex-row justify-between items-center gap-2">
+            <div>
+                <h1 class="text-xl md:text-2xl title-font leading-tight">🏖️ Schatzsuche: Urlaub im Perfekt</h1>
+                <p class="text-green-100 text-xs italic">Setze den Präsens-Satz ins Perfekt! / Put the present-tense sentence into the perfect tense!</p>
+            </div>
+            <div id="timer-display" class="bg-green-800 px-3 py-1 rounded-xl text-lg md:text-xl font-bold border border-green-400 text-center shadow-inner">
+                08:00
+            </div>
+        </header>
+
+        <!-- Initial Setup Screen -->
+        <div id="setup-screen" class="p-8 text-center">
+            <h2 class="text-xl font-bold mb-4 text-slate-700">Wie viele Abenteurer seid ihr? / How many adventurers?</h2>
+            <div class="flex justify-center gap-4">
+                <button onclick="startGame(2)" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95">2 Spieler</button>
+                <button onclick="startGame(3)" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl text-lg font-bold shadow transition-transform active:scale-95">3 Spieler</button>
+            </div>
+        </div>
+
+        <!-- Main Game Interface (Compact Single Page) -->
+        <div id="game-screen" class="hidden flex flex-col lg:flex-row h-full">
+            
+            <!-- Left Panel: Control & Tasks -->
+            <div class="w-full lg:w-5/12 p-3 md:p-4 bg-slate-50 border-r border-slate-200 flex flex-col justify-between gap-2.5">
+                
+                <!-- Player Board -->
+                <div id="player-board" class="grid grid-cols-2 lg:grid-cols-1 gap-2"></div>
+
+                <!-- Level Selector (Easy vs Advanced) -->
+                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 text-center mb-1.5">Schwierigkeit wählen / Choose Level:</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="mode-easy-btn" onclick="selectMode('easy')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all">
+                            🟢 Einfach (Hauptsatz TMP)<br><span class="text-[10px] font-normal">1–2 Felder / tiles</span>
+                        </button>
+                        <button id="mode-adv-btn" onclick="selectMode('advanced')" class="py-1.5 px-2 rounded-lg font-bold text-xs border-2 transition-all">
+                            🟣 Profi (+ Nebensatz)<br><span class="text-[10px] font-normal">Bonus: 2–3 Felder / tiles!</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Task Box -->
+                <div id="turn-info" class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center space-y-1.5">
+                    <div>
+                        <p class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Präsens (Gegenwart) → Setze ins Perfekt:</p>
+                        <p id="present-prompt" class="text-sm md:text-base font-black text-slate-900 mt-0.5 leading-snug"></p>
+                    </div>
+                    <div class="pt-1 border-t border-slate-100">
+                        <p class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Bedeutung (Vergangenheit / Past Meaning):</p>
+                        <p id="english-prompt" class="text-xs md:text-sm font-bold text-blue-600 italic"></p>
+                    </div>
+                </div>
+
+                <!-- Input & Speech Section (with Start/Stop Recording) -->
+                <div id="input-section" class="space-y-1.5">
+                    <textarea id="answer-input" placeholder="Tippe den Perfekt-Satz oder nutze die Aufnahme / Type or record..."
+                           class="w-full p-2 border border-slate-300 rounded-xl focus:border-green-500 outline-none transition-all text-sm md:text-base bg-white h-16 resize-none font-bold text-black"
+                    ></textarea>
+                    
+                    <div class="flex gap-2">
+                        <button id="mic-btn" onclick="toggleSpeech()" 
+                                class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-xl shadow flex items-center justify-center gap-1.5 text-xs md:text-sm transition-all">
+                            <span id="mic-icon">🎤</span> <span id="mic-label">Aufnahme starten / Start</span>
+                        </button>
+                        <button id="submit-btn" onclick="checkAnswer()"
+                                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-black py-2 px-3 rounded-xl shadow transition-all text-xs md:text-sm">
+                            PRÜFEN / CHECK ✓
+                        </button>
+                    </div>
+                    <p id="speech-status" class="text-[11px] text-center text-slate-500 h-3.5 font-bold italic">Bereit für Aufnahme oder Tippen / Ready</p>
+                </div>
+                
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="p-2 md:p-2.5 rounded-xl flex flex-col items-center justify-center text-center bg-white border border-slate-200 shadow-inner min-h-[92px] text-xs">
+                    <p class="text-slate-400 italic">Wähle Einfach oder Profi, bilde den Satz im Perfekt und klicke auf PRÜFEN!</p>
+                </div>
+
+                <button id="continue-btn" onclick="nextTurn()" 
+                        class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow transition-all animate-pulse text-sm md:text-base">
+                    Nächster Spieler / Next Player ➔
+                </button>
+            </div>
+
+            <!-- Right Panel: The Digging Grid -->
+            <div class="w-full lg:w-7/12 p-3 md:p-4 bg-white flex flex-col justify-between">
+                <div class="mb-2 flex justify-between items-center bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                    <h3 id="grid-status-text" class="text-xs md:text-sm font-bold text-slate-700 flex items-center gap-1">
+                        <span>📍</span> Bereit zum Graben / Ready to dig...
+                    </h3>
+                    <span id="dig-count" class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold shadow-sm"></span>
+                </div>
+                <div id="treasure-grid" class="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-100 max-h-[430px] overflow-y-auto">
+                </div>
+            </div>
+        </div>
+
+        <!-- End Game Ranking Screen -->
+        <div id="finish-screen" class="hidden p-8 text-center">
+            <h2 class="text-4xl title-font mb-4 text-green-600">Spiel Beendet! / Game Over!</h2>
+            <div id="final-ranking" class="max-w-md mx-auto mb-6 space-y-3"></div>
+            <button onclick="location.reload()" class="bg-green-600 text-white px-8 py-4 rounded-2xl text-xl title-font hover:bg-green-700 transition-colors shadow-lg">Nochmal spielen / Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * EASY SENTENCES: Main clauses with TMP (Time - Manner - Place), separable/inseparable verbs, haben vs sein.
+         */
+        const easySentences = [
+            { present: "Wir fahren mit der Fähre auf eine Insel.", perfekt: "Wir sind mit der Fähre auf eine Insel gefahren.", english: "We went to an island by ferry." },
+            { present: "Sie fahren mit dem Auto in ein Dorf.", perfekt: "Sie sind mit dem Auto in ein Dorf gefahren.", english: "They went to a village by car." },
+            { present: "Meine Freunde und ich fahren mit dem Reisebus in ein Skigebiet.", perfekt: "Meine Freunde und ich sind mit dem Reisebus in ein Skigebiet gefahren.", english: "My friends and I went to a ski resort by coach." },
+            { present: "Wir fahren am Samstag in einen Freizeitpark.", perfekt: "Wir sind am Samstag in einen Freizeitpark gefahren.", english: "We went to a theme park on Saturday." },
+            { present: "Ihr fahrt mit dem Fahrrad an den Strand.", perfekt: "Ihr seid mit dem Fahrrad an den Strand gefahren.", english: "You (pl.) went to the beach by bike." },
+            { present: "Ich fahre mit der S-Bahn in die Stadt.", perfekt: "Ich bin mit der S-Bahn in die Stadt gefahren.", english: "I went into town by suburban train." },
+            { present: "Er fliegt mit dem Flugzeug ins Ausland.", perfekt: "Er ist mit dem Flugzeug ins Ausland geflogen.", english: "He flew abroad by plane." },
+            { present: "Wir fahren mit der Eisenbahn in die Hauptstadt.", perfekt: "Wir sind mit der Eisenbahn in die Hauptstadt gefahren.", english: "We went to the capital by train." },
+            { present: "Sie fährt im Sommer mit dem Wohnmobil ans Meer.", perfekt: "Sie ist im Sommer mit dem Wohnmobil ans Meer gefahren.", english: "She went to the seaside in a camper van in summer." },
+            { present: "Ich gehe am Morgen zu Fuß an den Strand.", perfekt: "Ich bin am Morgen zu Fuß an den Strand gegangen.", english: "I walked to the beach in the morning." },
+            { present: "Meine Familie fährt mit dem Wohnwagen an die Küste.", perfekt: "Meine Familie ist mit dem Wohnwagen an die Küste gefahren.", english: "My family went to the coast with a caravan." },
+            { present: "Ihr fahrt mit dem Kreuzfahrtschiff auf eine Insel.", perfekt: "Ihr seid mit dem Kreuzfahrtschiff auf eine Insel gefahren.", english: "You (pl.) went to an island on a cruise ship." },
+            { present: "Wir fahren mit der U-Bahn in den Wald.", perfekt: "Wir sind mit der U-Bahn in den Wald gefahren.", english: "We went to the forest by underground." },
+            { present: "Du fährst mit dem Luftkissenboot nach England.", perfekt: "Du bist mit dem Luftkissenboot nach England gefahren.", english: "You went to England by hovercraft." },
+            { present: "Meine Familie wohnt in einer Villa.", perfekt: "Meine Familie hat in einer Villa gewohnt.", english: "My family stayed in a villa." },
+            { present: "Wir bleiben im Hotel mit Vollpension.", perfekt: "Wir sind im Hotel mit Vollpension geblieben.", english: "We stayed in a hotel with full board." },
+            { present: "Sie bleiben in den Ferien zu Hause.", perfekt: "Sie sind in den Ferien zu Hause geblieben.", english: "They stayed at home in the holidays." },
+            { present: "Wir übernachten auf einem Campingplatz.", perfekt: "Wir haben auf einem Campingplatz übernachtet.", english: "We spent the night at a campsite." },
+            { present: "Ich schlafe im Hotel in einem Doppelzimmer.", perfekt: "Ich habe im Hotel in einem Doppelzimmer geschlafen.", english: "I slept in a double room in the hotel." },
+            { present: "Du bleibst in einer Pension mit Halbpension.", perfekt: "Du bist in einer Pension mit Halbpension geblieben.", english: "You stayed in a guesthouse with half board." },
+            { present: "Er übernachtet in einer Jugendherberge mit Frühstück.", perfekt: "Er hat in einer Jugendherberge mit Frühstück übernachtet.", english: "He stayed overnight in a youth hostel with breakfast." },
+            { present: "Wir machen Urlaub auf Balkonien.", perfekt: "Wir haben Urlaub auf Balkonien gemacht.", english: "We had a staycation at home." },
+            { present: "Wir ruhen uns am Nachmittag im Hotel aus.", perfekt: "Wir haben uns am Nachmittag im Hotel ausgeruht.", english: "We rested in the hotel in the afternoon." },
+            { present: "Du baust am Strand Sandburgen.", perfekt: "Du hast am Strand Sandburgen gebaut.", english: "You built sandcastles on the beach." },
+            { present: "Ich segle am Nachmittag auf dem See.", perfekt: "Ich bin am Nachmittag auf dem See gesegelt.", english: "I went sailing on the lake in the afternoon." },
+            { present: "Sie besichtigt mit der Familie eine Stadt.", perfekt: "Sie hat mit der Familie eine Stadt besichtigt.", english: "She visited a city with the family." },
+            { present: "Ich lese am Pool ein Buch.", perfekt: "Ich habe am Pool ein Buch gelesen.", english: "I read a book by the pool." },
+            { present: "Ihr wandert den ganzen Tag in den Bergen.", perfekt: "Ihr seid den ganzen Tag in den Bergen gewandert.", english: "You (pl.) went hiking in the mountains all day." },
+            { present: "Wir treffen am Abend in der Stadt Freunde.", perfekt: "Wir haben am Abend in der Stadt Freunde getroffen.", english: "We met friends in town in the evening." },
+            { present: "Meine Familie sammelt am Strand Muscheln.", perfekt: "Meine Familie hat am Strand Muscheln gesammelt.", english: "My family collected shells on the beach." },
+            { present: "Ich sonne mich jeden Tag am Strand.", perfekt: "Ich habe mich jeden Tag am Strand gesonnt.", english: "I sunbathed on the beach every day." },
+            { present: "Er fährt im Skigebiet Snowboard.", perfekt: "Er ist im Skigebiet Snowboard gefahren.", english: "He went snowboarding at the ski resort." },
+            { present: "Wir kommen um Mitternacht in Berlin an.", perfekt: "Wir sind um Mitternacht in Berlin angekommen.", english: "We arrived in Berlin at midnight." },
+            { present: "Ihr steigt in Frankfurt in den Zug um.", perfekt: "Ihr seid in Frankfurt in den Zug umgestiegen.", english: "You (pl.) changed trains in Frankfurt." },
+            { present: "Wir bekommen im Luxushotel ein Zimmer mit Meerblick.", perfekt: "Wir haben im Luxushotel ein Zimmer mit Meerblick bekommen.", english: "We got a room with a sea view in the luxury hotel." },
+            { present: "Er vergisst zu Hause den Reisepass.", perfekt: "Er hat zu Hause den Reisepass vergessen.", english: "He forgot his passport at home." },
+            { present: "Sie verliert am Strand das Handy.", perfekt: "Sie hat am Strand das Handy verloren.", english: "She lost her phone on the beach." },
+            { present: "Wir probieren im Restaurant die Spezialitäten.", perfekt: "Wir haben im Restaurant die Spezialitäten probiert.", english: "We tried the local specialities in the restaurant." },
+            { present: "Ihr kauft am Morgen im Supermarkt ein.", perfekt: "Ihr habt am Morgen im Supermarkt eingekauft.", english: "You (pl.) went shopping at the supermarket in the morning." },
+            { present: "Ich verbringe viel Zeit mit der Familie.", perfekt: "Ich habe viel Zeit mit der Familie verbracht.", english: "I spent a lot of time with the family." }
+        ];
+
+        /**
+         * ADVANCED SENTENCES: Main Clause + Subordinate Clause (weil, obwohl, als, nachdem) in Perfekt.
+         */
+        const advancedSentences = [
+            {
+                present: "Wir bleiben im Hotel, weil es den ganzen Tag regnet.",
+                perfekt: "Wir sind im Hotel geblieben, weil es den ganzen Tag geregnet hat.",
+                english: "We stayed in the hotel because it rained all day."
+            },
+            {
+                present: "Ich sonne mich am Strand, obwohl das Wetter nicht sehr warm ist.",
+                perfekt: "Ich habe mich am Strand gesonnt, obwohl das Wetter nicht sehr warm gewesen ist.",
+                altPerfekt: "Ich habe mich am Strand gesonnt, obwohl das Wetter nicht sehr warm war.",
+                english: "I sunbathed on the beach although the weather was not very warm."
+            },
+            {
+                present: "Wir fahren mit der Fähre auf eine Insel, weil wir das Meer lieben.",
+                perfekt: "Wir sind mit der Fähre auf eine Insel gefahren, weil wir das Meer geliebt haben.",
+                english: "We went to an island by ferry because we loved the sea."
+            },
+            {
+                present: "Er schläft in einer Jugendherberge, weil er nicht viel Geld ausgibt.",
+                perfekt: "Er hat in einer Jugendherberge geschlafen, weil er nicht viel Geld ausgegeben hat.",
+                english: "He slept in a youth hostel because he didn't spend much money."
+            },
+            {
+                present: "Meine Familie macht Urlaub auf Balkonien, weil wir den Flug verpassen.",
+                perfekt: "Meine Familie hat Urlaub auf Balkonien gemacht, weil wir den Flug verpasst haben.",
+                english: "My family had a staycation at home because we missed the flight."
+            },
+            {
+                present: "Sie besichtigt die Hauptstadt, nachdem sie im Hotel ankommt.",
+                perfekt: "Sie hat die Hauptstadt besichtigt, nachdem sie im Hotel angekommen ist.",
+                english: "She went sightseeing in the capital after she arrived at the hotel."
+            },
+            {
+                present: "Wir gehen am Abend essen, nachdem wir im Meer schwimmen.",
+                perfekt: "Wir sind am Abend essen gegangen, nachdem wir im Meer geschwommen sind.",
+                english: "We went out to eat in the evening after we swam in the sea."
+            },
+            {
+                present: "Ich lese am Pool ein Buch, während meine Freunde im Meer tauchen.",
+                perfekt: "Ich habe am Pool ein Buch gelesen, während meine Freunde im Meer getaucht sind.",
+                english: "I read a book by the pool while my friends went diving in the sea."
+            },
+            {
+                present: "Ihr wandert in den Bergen, obwohl ihr sehr früh aufsteht.",
+                perfekt: "Ihr seid in den Bergen gewandert, obwohl ihr sehr früh aufgestanden seid.",
+                english: "You (pl.) went hiking in the mountains although you got up very early."
+            },
+            {
+                present: "Du rufst die Oma an, weil du das Handy am Strand findest.",
+                perfekt: "Du hast die Oma angerufen, weil du das Handy am Strand gefunden hast.",
+                english: "You phoned grandma because you found the phone on the beach."
+            },
+            {
+                present: "Wir übernachten auf einem Campingplatz, weil das Luxushotel zu viel kostet.",
+                perfekt: "Wir haben auf einem Campingplatz übernachtet, weil das Luxushotel zu viel gekostet hat.",
+                english: "We stayed at a campsite because the luxury hotel cost too much."
+            },
+            {
+                present: "Er fährt mit dem Taxi in die Stadt, weil er den Reisebus verpasst.",
+                perfekt: "Er ist mit dem Taxi in die Stadt gefahren, weil er den Reisebus verpasst hat.",
+                english: "He went into town by taxi because he missed the coach."
+            },
+            {
+                present: "Wir ruhen uns im Bungalow aus, nachdem wir im Wald Rad fahren.",
+                perfekt: "Wir haben uns im Bungalow ausgeruht, nachdem wir im Wald Rad gefahren sind.",
+                english: "We rested in the bungalow after we went cycling in the forest."
+            },
+            {
+                present: "Ich mache viele Fotos, als wir mit dem Boot an die Küste fahren.",
+                perfekt: "Ich habe viele Fotos gemacht, als wir mit dem Boot an die Küste gefahren sind.",
+                english: "I took lots of photos when we went to the coast by boat."
+            },
+            {
+                present: "Sie kauft im Supermarkt ein, bevor sie in der Ferienwohnung kocht.",
+                perfekt: "Sie hat im Supermarkt eingekauft, bevor sie in der Ferienwohnung gekocht hat.",
+                english: "She went shopping at the supermarket before she cooked in the holiday flat."
+            },
+            {
+                present: "Wir entspannen uns am Strand, weil wir im Urlaub viel Zeit verbringen.",
+                perfekt: "Wir haben uns am Strand entspannt, weil wir im Urlaub viel Zeit verbracht haben.",
+                english: "We relaxed on the beach because we spent a lot of time on holiday."
+            },
+            {
+                present: "Ihr steigt in München aus, nachdem ihr in Frankfurt umsteigt.",
+                perfekt: "Ihr seid in München ausgestiegen, nachdem ihr in Frankfurt umgestiegen seid.",
+                english: "You (pl.) got off in Munich after you changed trains in Frankfurt."
+            },
+            {
+                present: "Meine Freunde und ich besuchen ein Museum, weil wir in der Stadt bleiben.",
+                perfekt: "Meine Freunde und ich haben ein Museum besucht, weil wir in der Stadt geblieben sind.",
+                english: "My friends and I visited a museum because we stayed in town."
+            },
+            {
+                present: "Er erlebt im Ausland viel, obwohl er den Reisepass vergisst.",
+                perfekt: "Er hat im Ausland viel erlebt, obwohl er den Reisepass vergessen hat.",
+                english: "He experienced a lot abroad although he forgot his passport."
+            },
+            {
+                present: "Ich bezahle das Hotel mit Karte, bevor ich am Sonntag zurückkomme.",
+                perfekt: "Ich habe das Hotel mit Karte bezahlt, bevor ich am Sonntag zurückgekommen bin.",
+                english: "I paid for the hotel by card before I came back on Sunday."
+            }
+        ];
+
+        const playerColours = ['blue', 'purple', 'amber'];
+        const playerNames = ['Blaues Team', 'Lila Team', 'Gold Team'];
+
+        let players = [];
+        let easyDeck = [];
+        let advDeck = [];
+        let currentMode = 'easy';
+        let currentPlayerIndex = 0;
+        let currentPair = null;
+        let digsRemaining = 0;
+        let gridData = [];
+        const gridSize = 48; 
+        let timeLeft = 480;
+        let timerInterval = null;
+
+        // Speech Recognition with manual Start & Stop control
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isRecording = false;
+        let finalTranscript = "";
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'de-DE';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            
+            recognition.onstart = () => {
+                isRecording = true;
+                updateMicButtonUI(true);
+                document.getElementById('speech-status').innerText = "🔴 Aufnahme läuft... Klicke auf Stopp, wenn du fertig bist.";
+            };
+
+            recognition.onresult = (event) => {
+                let interimTranscript = "";
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + " ";
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                const input = document.getElementById('answer-input');
+                input.value = (finalTranscript + interimTranscript).trim();
+            };
+            
+            recognition.onerror = () => {
+                isRecording = false;
+                updateMicButtonUI(false);
+                document.getElementById('speech-status').innerText = "⚠️ Mikrofon-Hinweis: Du kannst jederzeit direkt tippen.";
+            };
+            
+            recognition.onend = () => {
+                isRecording = false;
+                updateMicButtonUI(false);
+                document.getElementById('speech-status').innerText = "✅ Aufnahme gestoppt. Prüfe deinen Satz oder korrigiere ihn.";
+            };
+        }
+
+        function updateMicButtonUI(recording) {
+            const micBtn = document.getElementById('mic-btn');
+            const micIcon = document.getElementById('mic-icon');
+            const micLabel = document.getElementById('mic-label');
+            if (recording) {
+                micBtn.classList.add('mic-listening');
+                micIcon.innerText = "⏹️";
+                micLabel.innerText = "Aufnahme stoppen / Stop";
+            } else {
+                micBtn.classList.remove('mic-listening');
+                micIcon.innerText = "🎤";
+                micLabel.innerText = "Aufnahme starten / Start";
+            }
+        }
+
+        function toggleSpeech() {
+            if (!recognition) {
+                alert("Spracherkennung wird von diesem Browser leider nicht unterstützt. Bitte tippe den Satz direkt ins Textfeld ein.");
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                finalTranscript = document.getElementById('answer-input').value ? document.getElementById('answer-input').value + " " : "";
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        }
+
+        function startGame(count) {
+            players = [];
+            for (let i = 0; i < count; i++) {
+                players.push({ 
+                    id: i, 
+                    name: playerNames[i], 
+                    score: 0, 
+                    correctAnswers: 0, 
+                    color: playerColours[i] 
+                });
+            }
+            easyDeck = [...easySentences].sort(() => Math.random() - 0.5);
+            advDeck = [...advancedSentences].sort(() => Math.random() - 0.5);
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            initialiseGrid();
+            updatePlayerBoard();
+            startTimer();
+            startNewRound();
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            display.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            if (timeLeft <= 30) display.classList.add('timer-low');
+        }
+
+        function initialiseGrid() {
+            const gridContainer = document.getElementById('treasure-grid');
+            const rewardTypes = [
+                { icon: '🪙', min: 2, max: 10, label: 'Münzen / Coins' },   
+                { icon: '💰', min: 15, max: 35, label: 'Geldbeutel / Purse' }, 
+                { icon: '💍', min: 10, max: 15, label: 'Ring / Ring' }, 
+                { icon: '💎', min: 20, max: 30, label: 'Edelstein / Gem' }, 
+                { icon: '👑', min: 40, max: 60, label: 'Krone / Crown' }, 
+                { icon: '✨', min: 1, max: 5, label: 'Sternenstaub / Stardust' },   
+                { icon: '🦴', min: -5, max: -2, label: 'Knochen / Bone' }, 
+                { icon: '💩', min: -8, max: -4, label: 'Mist / Dirt' }, 
+                { icon: '❌', min: -15, max: -10, label: 'Gefahr / Danger' },
+                { icon: '👟', min: 0, max: 1, label: 'Alter Schuh / Old Shoe' }, 
+                { icon: '🥫', min: 0, max: 1, label: 'Alte Dose / Old Can' }    
+            ];
+
+            let tempRewards = [];
+            for(let i = 0; i < 8; i++) tempRewards.push({...rewardTypes[0]}); 
+            for(let i = 0; i < 5; i++) tempRewards.push({...rewardTypes[1]}); 
+            for(let i = 0; i < 3; i++) tempRewards.push({...rewardTypes[2]}); 
+            for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[3]}); 
+            for(let i = 0; i < 1; i++) tempRewards.push({...rewardTypes[4]}); 
+            for(let i = 0; i < 3; i++) tempRewards.push({...rewardTypes[5]}); 
+            for(let i = 0; i < 3; i++) tempRewards.push({...rewardTypes[6]}); 
+            for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[7]}); 
+            for(let i = 0; i < 2; i++) tempRewards.push({...rewardTypes[8]}); 
+            for(let i = 0; i < 4; i++) tempRewards.push({...rewardTypes[9]}); 
+            for(
