@@ -75,7 +75,7 @@
             text-align: center;
         }
 
-        /* Setup Screen with QR Code */
+        /* Setup Screen with Inline SVG QR Code */
         #setup-screen {
             padding: 28px 20px;
             text-align: center;
@@ -92,35 +92,43 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            max-width: 360px;
+            gap: 10px;
+            max-width: 400px;
             width: 100%;
         }
         .qr-card p {
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             font-weight: 800;
             color: #334155;
         }
-        .qr-img {
-            width: 210px;
-            height: 210px;
-            border-radius: 12px;
-            border: 3px solid #e2e8f0;
+        .qr-svg-box {
+            width: 220px;
+            height: 220px;
+            border-radius: 14px;
+            border: 3px solid #cbd5e1;
             background: #ffffff;
-            padding: 6px;
+            padding: 12px;
             transition: width 0.25s ease, height 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .qr-img.enlarged {
+        .qr-svg-box.enlarged {
             width: 340px;
             height: 340px;
+        }
+        .qr-svg-box svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
         .btn-zoom {
             background: #e2e8f0;
             color: #334155;
             border: none;
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 8px;
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             font-weight: 700;
             cursor: pointer;
         }
@@ -169,6 +177,10 @@
             max-width: 420px;
             width: 100%;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
 
         /* Main Game Layout */
@@ -470,12 +482,23 @@
             </div>
         </header>
 
-        <!-- Initial Setup Screen with QR Code -->
+        <!-- Initial Setup Screen with Pure Vector SVG QR Code -->
         <div id="setup-screen">
             <div class="qr-card">
                 <p>📱 Scanne den QR-Code / Scan the QR code:</p>
-                <img id="setup-qr-img" class="qr-img" alt="QR Code" src="data:image/png;base64,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" />
-                <button id="zoom-qr-btn" type="button" class="btn-zoom">🔍 QR-Code vergrößern / Enlarge</button>
+                <div id="setup-qr-box" class="qr-svg-box">
+                    <svg viewBox="-1 -1 35 35" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+                        <rect x="-1" y="-1" width="35" height="35" fill="#ffffff"/>
+                        <path fill="#000000" d="M0,0h7v1h-7zM9,0h1v1h-1zM11,0h1v1h-1zM15,0h2v1h-2zM18,0h1v1h-1zM22,0h1v1h-1zM24,0h1v1h-1zM26,0h7v1h-7zM0,1h1v1h-1zM6,1h1v1h-1zM11,1h1v1h-1zM14,1h4v1h-4zM19,1h4v1h-4zM24,1h1v1h-1zM26,1h1v1h-1zM32,1h1v1h-1zM0,2h1v1h-1zM2,2h3v1h-3zM6,2h1v1h-1zM8,2h1v1h-1zM10,2h3v1h-3zM14,2h1v1h-1zM18,2h2v1h-2zM21,2h4v1h-4zM26,2h1v1h-1zM28,2h3v1h-3zM32,2h1v1h-1zM0,3h1v1h-1zM2,3h3v1h-3zM6,3h1v1h-1zM8,3h1v1h-1zM12,3h1v1h-1zM14,3h2v1h-2zM18,3h1v1h-1zM20,3h2v1h-2zM23,3h1v1h-1zM26,3h1v1h-1zM28,3h3v1h-3zM32,3h1v1h-1zM0,4h1v1h-1zM2,4h3v1h-3zM6,4h1v1h-1zM9,4h2v1h-2zM13,4h2v1h-2zM16,4h4v1h-4zM22,4h1v1h-1zM26,4h1v1h-1zM28,4h3v1h-3zM32,4h1v1h-1zM0,5h1v1h-1zM6,5h1v1h-1zM9,5h3v1h-3zM15,5h2v1h-2zM18,5h4v1h-4zM23,5h1v1h-1zM26,5h1v1h-1zM32,5h1v1h-1zM0,6h7v1h-7zM8,6h1v1h-1zM10,6h1v1h-1zM12,6h1v1h-1zM14,6h1v1h-1zM16,6h1v1h-1zM18,6h1v1h-1zM20,6h1v1h-1zM22,6h1v1h-1zM24,6h1v1h-1zM26,6h7v1h-7zM9,7h1v1h-1zM11,7h2v1h-2zM14,7h1v1h-1zM16,7h1v1h-1zM19,7h2v1h-2zM22,7h3v1h-3zM3,8h2v1h-2zM6,8h2v1h-2zM9,8h1v1h-1zM12,8h1v1h-1zM15,8h2v1h-2zM20,8h2v1h-2zM24,8h1v1h-1zM29,8h2v1h-2zM1,9h1v1h-1zM7,9h1v1h-1zM9,9h4v1h-4zM18,9h2v1h-2zM21,9h1v1h-1zM23,9h3v1h-3zM27,9h2v1h-2zM30,9h2v1h-2zM2,10h2v1h-2zM6,10h3v1h-3zM10,10h1v1h-1zM23,10h1v1h-1zM25,10h1v1h-1zM27,10h1v1h-1zM30,10h3v1h-3zM1,11h3v1h-3zM5,11h1v1h-1zM7,11h4v1h-4zM22,11h2v1h-2zM26,11h3v1h-3zM30,11h3v1h-3zM0,12h2v1h-2zM6,12h2v1h-2zM9,12h2v1h-2zM14,12h5v1h-5zM24,12h1v1h-1zM26,12h3v1h-3zM32,12h1v1h-1zM1,13h1v1h-1zM3,13h3v1h-3zM9,13h1v1h-1zM13,13h7v1h-7zM23,13h1v1h-1zM25,13h1v1h-1zM27,13h1v1h-1zM31,13h1v1h-1zM0,14h2v1h-2zM3,14h1v1h-1zM5,14h3v1h-3zM12,14h3v1h-3zM16,14h5v1h-5zM25,14h1v1h-1zM27,14h2v1h-2zM30,14h1v1h-1zM1,15h2v1h-2zM5,15h1v1h-1zM7,15h1v1h-1zM12,15h2v1h-2zM15,15h6v1h-6zM24,15h2v1h-2zM27,15h4v1h-4zM0,16h3v1h-3zM5,16h4v1h-4zM12,16h2v1h-2zM15,16h6v1h-6zM25,16h4v1h-4zM30,16h1v1h-1zM32,16h1v1h-1zM0,17h2v1h-2zM5,17h1v1h-1zM7,17h1v1h-1zM12,17h2v1h-2zM15,17h3v1h-3zM19,17h2v1h-2zM24,17h1v1h-1zM26,17h4v1h-4zM31,17h1v1h-1zM1,18h1v1h-1zM4,18h1v1h-1zM6,18h4v1h-4zM12,18h3v1h-3zM16,18h5v1h-5zM23,18h1v1h-1zM26,18h2v1h-2zM29,18h2v1h-2zM32,18h1v1h-1zM0,19h1v1h-1zM2,19h1v1h-1zM5,19h1v1h-1zM8,19h2v1h-2zM13,19h7v1h-7zM23,19h3v1h-3zM27,19h4v1h-4zM1,20h2v1h-2zM5,20h3v1h-3zM9,20h2v1h-2zM14,20h5v1h-5zM27,20h1v1h-1zM29,20h1v1h-1zM0,21h4v1h-4zM9,21h1v1h-1zM22,21h1v1h-1zM25,21h1v1h-1zM28,21h4v1h-4zM0,22h1v1h-1zM2,22h2v1h-2zM5,22h2v1h-2zM11,22h1v1h-1zM23,22h1v1h-1zM26,22h1v1h-1zM28,22h1v1h-1zM31,22h2v1h-2zM0,23h1v1h-1zM2,23h3v1h-3zM18,23h1v1h-1zM22,23h3v1h-3zM27,23h2v1h-2zM30,23h2v1h-2zM0,24h2v1h-2zM4,24h4v1h-4zM11,24h5v1h-5zM17,24h2v1h-2zM20,24h2v1h-2zM23,24h6v1h-6zM31,24h2v1h-2zM8,25h1v1h-1zM12,25h1v1h-1zM14,25h2v1h-2zM18,25h2v1h-2zM24,25h1v1h-1zM28,25h1v1h-1zM30,25h1v1h-1zM0,26h7v1h-7zM8,26h2v1h-2zM12,26h1v1h-1zM16,26h1v1h-1zM18,26h1v1h-1zM20,26h1v1h-1zM22,26h3v1h-3zM26,26h1v1h-1zM28,26h1v1h-1zM0,27h1v1h-1zM6,27h1v1h-1zM14,27h1v1h-1zM16,27h2v1h-2zM20,27h1v1h-1zM23,27h2v1h-2zM28,27h1v1h-1zM30,27h2v1h-2zM0,28h1v1h-1zM2,28h3v1h-3zM6,28h1v1h-1zM8,28h1v1h-1zM11,28h1v1h-1zM13,28h2v1h-2zM17,28h2v1h-2zM20,28h2v1h-2zM23,28h7v1h-7zM31,28h1v1h-1zM0,29h1v1h-1zM2,29h3v1h-3zM6,29h1v1h-1zM8,29h4v1h-4zM14,29h1v1h-1zM16,29h5v1h-5zM22,29h1v1h-1zM25,29h1v1h-1zM27,29h1v1h-1zM30,29h1v1h-1zM32,29h1v1h-1zM0,30h1v1h-1zM2,30h3v1h-3zM6,30h1v1h-1zM11,30h1v1h-1zM13,30h3v1h-3zM19,30h1v1h-1zM28,30h1v1h-1zM30,30h3v1h-3zM0,31h1v1h-1zM6,31h1v1h-1zM9,31h1v1h-1zM12,31h1v1h-1zM15,31h2v1h-2zM18,31h2v1h-2zM25,31h2v1h-2zM29,31h4v1h-4zM0,32h7v1h-7zM10,32h2v1h-2zM14,32h3v1h-3zM18,32h1v1h-1zM23,32h2v1h-2zM26,32h1v1h-1zM28,32h1v1h-1z"/>
+                        <circle cx="16.5" cy="16.5" r="5" fill="#ffffff"/>
+                        <circle cx="16.5" cy="16.5" r="3.6" fill="#18191b"/>
+                        <text x="16.5" y="18.3" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-style="italic" font-weight="bold" font-size="5.5">C</text>
+                    </svg>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button id="zoom-qr-btn" type="button" class="btn-zoom">🔍 QR-Code vergrößern / Enlarge</button>
+                    <a href="https://www.canvaqr.com/RGXUdFqSzS" target="_blank" rel="noopener" style="font-size:0.75rem;color:#2563eb;font-weight:700;">Direktlink öffnen ↗</a>
+                </div>
             </div>
 
             <h2>Wie viele Abenteurer seid ihr? / How many adventurers?</h2>
@@ -488,11 +511,17 @@
         <!-- Pop-up QR Modal -->
         <div id="qr-modal" class="hidden">
             <div class="qr-modal-box">
-                <h3 style="font-size:1.2rem;font-weight:800;margin-bottom:12px;">📱 QR-Code scannen</h3>
-                <img style="width:300px;height:300px;border:3px solid #e2e8f0;border-radius:12px;padding:6px;" alt="QR Code" src="data:image/png;base64,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" />
-                <div style="margin-top:16px;">
-                    <button id="close-qr-modal" type="button" class="btn-setup" style="background:#16a34a;padding:10px 24px;font-size:1rem;">Schließen / Close</button>
+                <h3 style="font-size:1.2rem;font-weight:800;">📱 QR-Code scannen</h3>
+                <div class="qr-svg-box enlarged">
+                    <svg viewBox="-1 -1 35 35" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+                        <rect x="-1" y="-1" width="35" height="35" fill="#ffffff"/>
+                        <path fill="#000000" d="M0,0h7v1h-7zM9,0h1v1h-1zM11,0h1v1h-1zM15,0h2v1h-2zM18,0h1v1h-1zM22,0h1v1h-1zM24,0h1v1h-1zM26,0h7v1h-7zM0,1h1v1h-1zM6,1h1v1h-1zM11,1h1v1h-1zM14,1h4v1h-4zM19,1h4v1h-4zM24,1h1v1h-1zM26,1h1v1h-1zM32,1h1v1h-1zM0,2h1v1h-1zM2,2h3v1h-3zM6,2h1v1h-1zM8,2h1v1h-1zM10,2h3v1h-3zM14,2h1v1h-1zM18,2h2v1h-2zM21,2h4v1h-4zM26,2h1v1h-1zM28,2h3v1h-3zM32,2h1v1h-1zM0,3h1v1h-1zM2,3h3v1h-3zM6,3h1v1h-1zM8,3h1v1h-1zM12,3h1v1h-1zM14,3h2v1h-2zM18,3h1v1h-1zM20,3h2v1h-2zM23,3h1v1h-1zM26,3h1v1h-1zM28,3h3v1h-3zM32,3h1v1h-1zM0,4h1v1h-1zM2,4h3v1h-3zM6,4h1v1h-1zM9,4h2v1h-2zM13,4h2v1h-2zM16,4h4v1h-4zM22,4h1v1h-1zM26,4h1v1h-1zM28,4h3v1h-3zM32,4h1v1h-1zM0,5h1v1h-1zM6,5h1v1h-1zM9,5h3v1h-3zM15,5h2v1h-2zM18,5h4v1h-4zM23,5h1v1h-1zM26,5h1v1h-1zM32,5h1v1h-1zM0,6h7v1h-7zM8,6h1v1h-1zM10,6h1v1h-1zM12,6h1v1h-1zM14,6h1v1h-1zM16,6h1v1h-1zM18,6h1v1h-1zM20,6h1v1h-1zM22,6h1v1h-1zM24,6h1v1h-1zM26,6h7v1h-7zM9,7h1v1h-1zM11,7h2v1h-2zM14,7h1v1h-1zM16,7h1v1h-1zM19,7h2v1h-2zM22,7h3v1h-3zM3,8h2v1h-2zM6,8h2v1h-2zM9,8h1v1h-1zM12,8h1v1h-1zM15,8h2v1h-2zM20,8h2v1h-2zM24,8h1v1h-1zM29,8h2v1h-2zM1,9h1v1h-1zM7,9h1v1h-1zM9,9h4v1h-4zM18,9h2v1h-2zM21,9h1v1h-1zM23,9h3v1h-3zM27,9h2v1h-2zM30,9h2v1h-2zM2,10h2v1h-2zM6,10h3v1h-3zM10,10h1v1h-1zM23,10h1v1h-1zM25,10h1v1h-1zM27,10h1v1h-1zM30,10h3v1h-3zM1,11h3v1h-3zM5,11h1v1h-1zM7,11h4v1h-4zM22,11h2v1h-2zM26,11h3v1h-3zM30,11h3v1h-3zM0,12h2v1h-2zM6,12h2v1h-2zM9,12h2v1h-2zM14,12h5v1h-5zM24,12h1v1h-1zM26,12h3v1h-3zM32,12h1v1h-1zM1,13h1v1h-1zM3,13h3v1h-3zM9,13h1v1h-1zM13,13h7v1h-7zM23,13h1v1h-1zM25,13h1v1h-1zM27,13h1v1h-1zM31,13h1v1h-1zM0,14h2v1h-2zM3,14h1v1h-1zM5,14h3v1h-3zM12,14h3v1h-3zM16,14h5v1h-5zM25,14h1v1h-1zM27,14h2v1h-2zM30,14h1v1h-1zM1,15h2v1h-2zM5,15h1v1h-1zM7,15h1v1h-1zM12,15h2v1h-2zM15,15h6v1h-6zM24,15h2v1h-2zM27,15h4v1h-4zM0,16h3v1h-3zM5,16h4v1h-4zM12,16h2v1h-2zM15,16h6v1h-6zM25,16h4v1h-4zM30,16h1v1h-1zM32,16h1v1h-1zM0,17h2v1h-2zM5,17h1v1h-1zM7,17h1v1h-1zM12,17h2v1h-2zM15,17h3v1h-3zM19,17h2v1h-2zM24,17h1v1h-1zM26,17h4v1h-4zM31,17h1v1h-1zM1,18h1v1h-1zM4,18h1v1h-1zM6,18h4v1h-4zM12,18h3v1h-3zM16,18h5v1h-5zM23,18h1v1h-1zM26,18h2v1h-2zM29,18h2v1h-2zM32,18h1v1h-1zM0,19h1v1h-1zM2,19h1v1h-1zM5,19h1v1h-1zM8,19h2v1h-2zM13,19h7v1h-7zM23,19h3v1h-3zM27,19h4v1h-4zM1,20h2v1h-2zM5,20h3v1h-3zM9,20h2v1h-2zM14,20h5v1h-5zM27,20h1v1h-1zM29,20h1v1h-1zM0,21h4v1h-4zM9,21h1v1h-1zM22,21h1v1h-1zM25,21h1v1h-1zM28,21h4v1h-4zM0,22h1v1h-1zM2,22h2v1h-2zM5,22h2v1h-2zM11,22h1v1h-1zM23,22h1v1h-1zM26,22h1v1h-1zM28,22h1v1h-1zM31,22h2v1h-2zM0,23h1v1h-1zM2,23h3v1h-3zM18,23h1v1h-1zM22,23h3v1h-3zM27,23h2v1h-2zM30,23h2v1h-2zM0,24h2v1h-2zM4,24h4v1h-4zM11,24h5v1h-5zM17,24h2v1h-2zM20,24h2v1h-2zM23,24h6v1h-6zM31,24h2v1h-2zM8,25h1v1h-1zM12,25h1v1h-1zM14,25h2v1h-2zM18,25h2v1h-2zM24,25h1v1h-1zM28,25h1v1h-1zM30,25h1v1h-1zM0,26h7v1h-7zM8,26h2v1h-2zM12,26h1v1h-1zM16,26h1v1h-1zM18,26h1v1h-1zM20,26h1v1h-1zM22,26h3v1h-3zM26,26h1v1h-1zM28,26h1v1h-1zM0,27h1v1h-1zM6,27h1v1h-1zM14,27h1v1h-1zM16,27h2v1h-2zM20,27h1v1h-1zM23,27h2v1h-2zM28,27h1v1h-1zM30,27h2v1h-2zM0,28h1v1h-1zM2,28h3v1h-3zM6,28h1v1h-1zM8,28h1v1h-1zM11,28h1v1h-1zM13,28h2v1h-2zM17,28h2v1h-2zM20,28h2v1h-2zM23,28h7v1h-7zM31,28h1v1h-1zM0,29h1v1h-1zM2,29h3v1h-3zM6,29h1v1h-1zM8,29h4v1h-4zM14,29h1v1h-1zM16,29h5v1h-5zM22,29h1v1h-1zM25,29h1v1h-1zM27,29h1v1h-1zM30,29h1v1h-1zM32,29h1v1h-1zM0,30h1v1h-1zM2,30h3v1h-3zM6,30h1v1h-1zM11,30h1v1h-1zM13,30h3v1h-3zM19,30h1v1h-1zM28,30h1v1h-1zM30,30h3v1h-3zM0,31h1v1h-1zM6,31h1v1h-1zM9,31h1v1h-1zM12,31h1v1h-1zM15,31h2v1h-2zM18,31h2v1h-2zM25,31h2v1h-2zM29,31h4v1h-4zM0,32h7v1h-7zM10,32h2v1h-2zM14,32h3v1h-3zM18,32h1v1h-1zM23,32h2v1h-2zM26,32h1v1h-1zM28,32h1v1h-1z"/>
+                        <circle cx="16.5" cy="16.5" r="5" fill="#ffffff"/>
+                        <circle cx="16.5" cy="16.5" r="3.6" fill="#18191b"/>
+                        <text x="16.5" y="18.3" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-style="italic" font-weight="bold" font-size="5.5">C</text>
+                    </svg>
                 </div>
+                <button id="close-qr-modal" type="button" class="btn-setup" style="background:#16a34a;padding:10px 24px;font-size:1rem;">Schließen / Close</button>
             </div>
         </div>
 
@@ -1111,8 +1140,8 @@
 
             // QR Code Zoom & Modal controls
             document.getElementById('zoom-qr-btn').addEventListener('click', function() {
-                const qrImg = document.getElementById('setup-qr-img');
-                qrImg.classList.toggle('enlarged');
+                const qrBox = document.getElementById('setup-qr-box');
+                qrBox.classList.toggle('enlarged');
             });
             document.getElementById('qr-header-btn').addEventListener('click', function() {
                 document.getElementById('qr-modal').classList.remove('hidden');
